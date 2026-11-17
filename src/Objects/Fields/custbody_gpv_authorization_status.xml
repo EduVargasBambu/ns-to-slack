@@ -1,0 +1,15 @@
+<transactionbodycustomfield scriptid="custbody_gpv_authorization_status">
+  <accesslevel>2</accesslevel>
+  <bodypurchase>T</bodypurchase>
+  <description>Estado de la factura en la autorización de pagos. Lo actualiza la app; no se edita a mano.</description>
+  <displaytype>INLINE</displaytype>
+  <fieldtype>SELECT</fieldtype>
+  <help>Estado de la factura en la autorización de pagos: vacío si nunca ha entrado a un concentrado; Pendiente, Autorizada, Descartada o Pagada según su última línea de concentrado. Una factura descartada vuelve a estar disponible para un concentrado futuro.</help>
+  <isparent>F</isparent>
+  <ismandatory>F</ismandatory>
+  <label>Estado de autorización de pago</label>
+  <searchlevel>2</searchlevel>
+  <selectrecordtype>[scriptid=customlist_gpv_line_status]</selectrecordtype>
+  <showinlist>T</showinlist>
+  <storevalue>T</storevalue>
+</transactionbodycustomfield>

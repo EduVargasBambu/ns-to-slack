@@ -12,7 +12,6 @@ Responde en español. El código va en inglés.
 - Repo: git en `main` con remoto `origin` (GitHub `EduVargasBambu/ns-to-slack`). Configs de ESLint, Prettier y `jsconfig` (checkJs) y estructura de carpetas listas.
 - Tooling verificado: Node 22, `npm test` (Jest), `npm run lint` (ESLint 10), `npm run typecheck` (TypeScript 7, solo `src/`), `npm run format:check` (Prettier; los `.md` se excluyen).
 - Fase 1, librerías puras listas con tests en verde: `gpv_line_state_machine_lib`, `gpv_legacy_lib`, `gpv_constants_lib`.
-- Objetos SDF escritos (sin validar en NS): listas en `src/Objects/Lists/`, registros en `src/Objects/Records/` (approval_level, config, payment_proposal, proposal_line, audit_log).
+- Objetos SDF escritos (sin validar en NS): listas en `src/Objects/Lists/`, registros en `src/Objects/Records/` (approval_level, config, payment_proposal, proposal_line, audit_log), campos nativos en `src/Objects/Fields/` (`custbody_gpv_authorization_status`, `custentity_gpv_slack_user`). La bitácora registra también intentos no autorizados y limpiezas de legado.
 - Validación y deploy con la extensión SuiteCloud de VS Code (no se usa la CLI global). Pendiente: validar el proyecto contra el sandbox y confirmar que `~/Objects/*` de `deploy.xml` incluye las subcarpetas.
-- Pendiente de respuesta: agregar a `customlist_gpv_action` los valores "Intento no autorizado" y "Limpieza de aprobaciones previas" para la bitácora.
 - Reglas de legado (decididas 17 nov): aprobaciones previas fuera de orden → la línea arranca en nivel 1; las tres aprobadas → nace Autorizada. Con huecos, al generar el concentrado se **limpian** los campos legados aprobados (`getLevelsToClear`) para que la factura vuelva a pasar por cada nivel.

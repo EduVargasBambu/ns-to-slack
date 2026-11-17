@@ -105,6 +105,7 @@ Gpo_Vallas_NS_to_Slack/
     Objects/                                  # XML de SDF, una subcarpeta por tipo de objeto
       Lists/                                  # customlist_*
       Records/                                # customrecord_* (con sus campos custrecord_*)
+      Fields/                                 # campos de registros nativos (custbody_*, custentity_*)
     FileCabinet/SuiteScripts/gpv_payment_authorization/
       lib/        # núcleo: lógica de negocio, sin dependencia del canal
       slack/      # cliente, verificación de firma, Block Kit, router de interacciones
@@ -136,7 +137,7 @@ Gpo_Vallas_NS_to_Slack/
 | Línea del concentrado | `ProposalLine` | `customrecord_gpv_proposal_line` |
 | Junta | `meeting` | `custrecord_gpv_pp_meeting_date` |
 | Nivel de aprobación (CFO, CEO 1, CEO 2) | `ApprovalLevel` | `customrecord_gpv_approval_level` |
-| Aprobar / Descartar | `approve` / `discard` | `customlist_gpv_action` |
+| Aprobar / Descartar (acciones de bitácora: también Intento no autorizado / Limpieza de aprobaciones previas) | `approve` / `discard` (`unauthorized` / `clear_legacy`) | `customlist_gpv_action` |
 | Estado de la línea | `LineStatus` (`PENDING`, `AUTHORIZED`, `DISCARDED`, `PAID`) | `customlist_gpv_line_status` |
 | Estado del concentrado (Abierto / Cerrado / Cancelado) | `ProposalStatus` (`OPEN`, `CLOSED`, `CANCELLED`) | `customlist_gpv_proposal_status` |
 | Estado de autorización en la factura | `authorizationStatus` | `custbody_gpv_authorization_status` |

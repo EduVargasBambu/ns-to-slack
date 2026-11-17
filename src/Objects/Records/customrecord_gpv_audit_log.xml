@@ -5,7 +5,7 @@
   <allowinlineediting>F</allowinlineediting>
   <allowquicksearch>T</allowquicksearch>
   <allowuiaccess>T</allowuiaccess>
-  <description>Evidencia de cada acción de autorización: quién, qué, sobre qué línea, en qué nivel, desde qué canal y cuándo (fecha de creación). No se edita ni se borra.</description>
+  <description>Evidencia de cada acción de autorización: quién, qué, sobre qué línea, en qué nivel, desde qué canal y cuándo (fecha de creación). Incluye intentos no autorizados y limpiezas de aprobaciones previas. No se edita ni se borra.</description>
   <enabledle>T</enabledle>
   <enablekeywords>F</enablekeywords>
   <enablemailmerge>F</enablemailmerge>
@@ -30,9 +30,9 @@
       <description>Concentrado de la línea.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>SELECT</fieldtype>
-      <help>Concentrado al que pertenece la factura sobre la que se actuó.</help>
+      <help>Concentrado al que pertenece la factura. Puede quedar vacío en un intento no autorizado que no se pudo asociar.</help>
       <isparent>F</isparent>
-      <ismandatory>T</ismandatory>
+      <ismandatory>F</ismandatory>
       <label>Concentrado</label>
       <searchlevel>2</searchlevel>
       <selectrecordtype>[scriptid=customrecord_gpv_payment_proposal]</selectrecordtype>
@@ -44,9 +44,9 @@
       <description>Línea del concentrado sobre la que se actuó.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>SELECT</fieldtype>
-      <help>Línea del concentrado (factura) sobre la que se actuó.</help>
+      <help>Línea del concentrado (factura) sobre la que se actuó. Puede quedar vacía en un intento no autorizado que no se pudo asociar.</help>
       <isparent>F</isparent>
-      <ismandatory>T</ismandatory>
+      <ismandatory>F</ismandatory>
       <label>Línea</label>
       <searchlevel>2</searchlevel>
       <selectrecordtype>[scriptid=customrecord_gpv_proposal_line]</selectrecordtype>
@@ -58,9 +58,9 @@
       <description>Nivel en que estaba la línea al actuar.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>SELECT</fieldtype>
-      <help>Nivel de aprobación en que estaba la factura cuando se hizo la acción.</help>
+      <help>Nivel en que estaba la factura al actuar. En una limpieza de aprobaciones previas, es el nivel cuyo campo legado se limpió.</help>
       <isparent>F</isparent>
-      <ismandatory>T</ismandatory>
+      <ismandatory>F</ismandatory>
       <label>Nivel</label>
       <searchlevel>2</searchlevel>
       <selectrecordtype>[scriptid=customrecord_gpv_approval_level]</selectrecordtype>
@@ -72,7 +72,7 @@
       <description>Acción realizada.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>SELECT</fieldtype>
-      <help>Aprobar o Descartar.</help>
+      <help>Aprobar, Descartar, Intento no autorizado o Limpieza de aprobaciones previas.</help>
       <isparent>F</isparent>
       <ismandatory>T</ismandatory>
       <label>Acción</label>
@@ -86,9 +86,9 @@
       <description>Empleado que hizo la acción.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>SELECT</fieldtype>
-      <help>Empleado de NetSuite que hizo la acción (el aprobador o su suplente).</help>
+      <help>Empleado de NetSuite que hizo la acción. Vacío si un usuario de Slack sin empleado asociado intentó actuar.</help>
       <isparent>F</isparent>
-      <ismandatory>T</ismandatory>
+      <ismandatory>F</ismandatory>
       <label>Empleado</label>
       <searchlevel>2</searchlevel>
       <selectrecordtype>-4</selectrecordtype>
@@ -141,9 +141,9 @@
       <description>Clave única línea + nivel + acción.</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>TEXT</fieldtype>
-      <help>Clave que evita registrar dos veces la misma acción (reintentos de Slack o doble clic). La genera la app.</help>
+      <help>Clave línea + nivel + acción que evita registrar dos veces la misma aprobación o descarte (reintentos de Slack o doble clic). Vacía en las demás acciones.</help>
       <isparent>F</isparent>
-      <ismandatory>T</ismandatory>
+      <ismandatory>F</ismandatory>
       <label>Clave de idempotencia</label>
       <maxlength>100</maxlength>
       <searchlevel>2</searchlevel>

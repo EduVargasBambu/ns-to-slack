@@ -1,0 +1,15 @@
+<entitycustomfield scriptid="custentity_gpv_slack_user">
+  <accesslevel>2</accesslevel>
+  <appliestoemployee>T</appliestoemployee>
+  <description>ID del usuario de Slack del empleado. Liga las acciones en Slack con el empleado de NetSuite.</description>
+  <displaytype>NORMAL</displaytype>
+  <fieldtype>TEXT</fieldtype>
+  <help>ID del usuario de Slack (por ejemplo U0123456789). La app lo llena buscando por correo en Slack; si los correos no coinciden, lo captura un administrador. Solo un empleado con este ID puede aprobar desde Slack.</help>
+  <isparent>F</isparent>
+  <ismandatory>F</ismandatory>
+  <label>Usuario de Slack</label>
+  <maxlength>20</maxlength>
+  <searchlevel>2</searchlevel>
+  <showinlist>F</showinlist>
+  <storevalue>T</storevalue>
+</entitycustomfield>

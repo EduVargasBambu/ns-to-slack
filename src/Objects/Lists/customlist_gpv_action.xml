@@ -1,5 +1,5 @@
 <customlist scriptid="customlist_gpv_action">
-  <description>Acción de un aprobador sobre una línea del concentrado. Se usa en la bitácora.</description>
+  <description>Acción registrada en la bitácora: aprobar o descartar una línea, un intento de alguien que no es el aprobador del nivel, o la limpieza de aprobaciones previas fuera de orden.</description>
   <isinactive>F</isinactive>
   <ismatrixoption>F</ismatrixoption>
   <isordered>T</isordered>
@@ -12,6 +12,14 @@
     <customvalue scriptid="val_gpv_discard">
       <isinactive>F</isinactive>
       <value>Descartar</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_unauthorized">
+      <isinactive>F</isinactive>
+      <value>Intento no autorizado</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_clear_legacy">
+      <isinactive>F</isinactive>
+      <value>Limpieza de aprobaciones previas</value>
     </customvalue>
   </customvalues>
 </customlist>
