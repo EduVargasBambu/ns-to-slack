@@ -1,0 +1,99 @@
+<customrecordtype scriptid="customrecord_gpv_approval_level">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlineediting>F</allowinlineediting>
+  <allowquicksearch>F</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Niveles de la cadena de autorización de pagos (CFO, CEO 1, CEO 2), en orden. Una factura pasa por cada nivel de forma secuencial.</description>
+  <enabledle>T</enabledle>
+  <enablekeywords>F</enablekeywords>
+  <enablemailmerge>F</enablemailmerge>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>T</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>T</includename>
+  <isinactive>F</isinactive>
+  <isordered>F</isordered>
+  <recordname>GPV - Nivel de aprobación</recordname>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>F</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>T</shownotes>
+  <showowner>F</showowner>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_order">
+      <accesslevel>2</accesslevel>
+      <description>Posición del nivel en la cadena: 1 = primero en aprobar.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>INTEGER</fieldtype>
+      <help>Orden en que el nivel aprueba. 1 es el primero (CFO). No debe repetirse entre niveles activos.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Orden</label>
+      <minvalue>1</minvalue>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_approver">
+      <accesslevel>2</accesslevel>
+      <description>Empleado que aprueba en este nivel.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Empleado que autoriza las facturas que esperan este nivel, desde Slack o desde NetSuite.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Aprobador</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-4</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_substitute">
+      <accesslevel>2</accesslevel>
+      <description>Empleado que puede aprobar en lugar del aprobador.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Opcional. Suplente que puede aprobar en lugar del aprobador de este nivel.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Suplente</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-4</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_legacy_field">
+      <accesslevel>2</accesslevel>
+      <description>ID del campo de la factura donde el flujo anterior registraba la aprobación de este nivel (custbody11, custbody10, custbody9).</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>ID del campo de la factura de proveedor que guarda la aprobación de este nivel en el flujo anterior. Ejemplo: custbody11 para CFO. La app lo lee al generar el concentrado y lo escribe al aprobar.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Campo legado</label>
+      <maxlength>40</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_sla_hours">
+      <accesslevel>2</accesslevel>
+      <description>Horas máximas para aprobar antes de recordar o escalar.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>INTEGER</fieldtype>
+      <help>Opcional. Horas que tiene el aprobador antes de recibir recordatorio y escalamiento.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>SLA (horas)</label>
+      <minvalue>1</minvalue>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+</customrecordtype>

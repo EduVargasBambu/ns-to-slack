@@ -1,0 +1,4 @@
+<manifest projecttype="ACCOUNTCUSTOMIZATION">
+    <projectname>Gpo_Vallas_NS_to_Slack</projectname>
+    <frameworkversion>1.0</frameworkversion>
+</manifest>

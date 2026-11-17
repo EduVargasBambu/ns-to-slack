@@ -1,0 +1,17 @@
+<customlist scriptid="customlist_gpv_channel">
+  <description>Canal desde el que se hizo una acción de autorización. Se usa en la bitácora.</description>
+  <isinactive>F</isinactive>
+  <ismatrixoption>F</ismatrixoption>
+  <isordered>T</isordered>
+  <name>GPV - Canal</name>
+  <customvalues>
+    <customvalue scriptid="val_gpv_slack">
+      <isinactive>F</isinactive>
+      <value>Slack</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_netsuite">
+      <isinactive>F</isinactive>
+      <value>NetSuite</value>
+    </customvalue>
+  </customvalues>
+</customlist>

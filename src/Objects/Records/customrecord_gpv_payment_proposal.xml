@@ -1,0 +1,100 @@
+<customrecordtype scriptid="customrecord_gpv_payment_proposal">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlineediting>F</allowinlineediting>
+  <allowquicksearch>T</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Concentrado de facturas presentado en la junta (una junta = un mensaje). El estado de cada factura vive en sus líneas; el estado del concentrado se deriva de ellas.</description>
+  <enabledle>T</enabledle>
+  <enablekeywords>F</enablekeywords>
+  <enablemailmerge>F</enablemailmerge>
+  <enablenumbering>T</enablenumbering>
+  <numberingcurrentnumber>1</numberingcurrentnumber>
+  <numberinginit>1</numberinginit>
+  <numberingmindigits>4</numberingmindigits>
+  <numberingprefix>CON-</numberingprefix>
+  <allownumberingoverride>F</allownumberingoverride>
+  <enableoptimisticlocking>T</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>F</includename>
+  <isinactive>F</isinactive>
+  <isordered>F</isordered>
+  <recordname>GPV - Concentrado</recordname>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>T</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>T</shownotes>
+  <showowner>T</showowner>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_gpv_pp_meeting_date">
+      <accesslevel>2</accesslevel>
+      <description>Fecha de la junta en que se revisa el concentrado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>DATE</fieldtype>
+      <help>Fecha de la junta de directivos en que se presenta este concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Fecha de junta</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pp_status">
+      <accesslevel>2</accesslevel>
+      <description>Estado derivado de las líneas.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Abierto mientras alguna factura espera aprobación. Cerrado cuando todas están autorizadas o descartadas. Lo actualiza la app; no se edita a mano.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Estado</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customlist_gpv_proposal_status]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pp_total_mxn">
+      <accesslevel>2</accesslevel>
+      <description>Suma de las facturas en MXN al generar el concentrado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CURRENCY</fieldtype>
+      <help>Total de las facturas en pesos incluidas al generar el concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Total MXN</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pp_total_usd">
+      <accesslevel>2</accesslevel>
+      <description>Suma de las facturas en USD al generar el concentrado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CURRENCY</fieldtype>
+      <help>Total de las facturas en dólares incluidas al generar el concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Total USD</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pp_excel_file">
+      <accesslevel>2</accesslevel>
+      <description>Archivo Excel generado para la junta.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>DOCUMENT</fieldtype>
+      <help>Copia en el File Cabinet del Excel que se generó para la junta, con las mismas columnas que la búsqueda de pendientes.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Excel del concentrado</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+</customrecordtype>

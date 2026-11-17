@@ -1,0 +1,18 @@
+# GPV Autorización de Pagos (NetSuite ↔ Slack)
+
+Antes de escribir código, lee:
+- `CONVENTIONS.md`: idioma, versión de JS, nomenclatura de archivos e IDs, estructura, glosario.
+- `../../NS to Slack/CONTEXTO-proyecto-netsuite-slack.md`: negocio y arquitectura.
+- `../../NS to Slack/PLAN-suiteapp-autorizacion-pagos.md`: plan y fases. Ojo: el plan dice SuiteApp, pero este proyecto es **Account Customization** a propósito (un solo cliente).
+
+Responde en español. El código va en inglés.
+
+## Estado (17 nov 2026)
+- Convenciones v0.2: patrón de IDs y glosario confirmados.
+- Repo: git en `main` con remoto `origin` (GitHub `EduVargasBambu/ns-to-slack`). Configs de ESLint, Prettier y `jsconfig` (checkJs) y estructura de carpetas listas.
+- Tooling verificado: Node 22, `npm test` (Jest), `npm run lint` (ESLint 10), `npm run typecheck` (TypeScript 7, solo `src/`), `npm run format:check` (Prettier; los `.md` se excluyen).
+- Fase 1, librerías puras listas con tests en verde: `gpv_line_state_machine_lib`, `gpv_legacy_lib`, `gpv_constants_lib`.
+- Objetos SDF escritos (sin validar en NS): listas en `src/Objects/Lists/`, registros en `src/Objects/Records/` (approval_level, config, payment_proposal, proposal_line, audit_log).
+- Validación y deploy con la extensión SuiteCloud de VS Code (no se usa la CLI global). Pendiente: validar el proyecto contra el sandbox y confirmar que `~/Objects/*` de `deploy.xml` incluye las subcarpetas.
+- Pendiente de respuesta: agregar a `customlist_gpv_action` los valores "Intento no autorizado" y "Limpieza de aprobaciones previas" para la bitácora.
+- Reglas de legado (decididas 17 nov): aprobaciones previas fuera de orden → la línea arranca en nivel 1; las tres aprobadas → nace Autorizada. Con huecos, al generar el concentrado se **limpian** los campos legados aprobados (`getLevelsToClear`) para que la factura vuelva a pasar por cada nivel.

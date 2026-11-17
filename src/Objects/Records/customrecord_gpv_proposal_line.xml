@@ -1,0 +1,166 @@
+<customrecordtype scriptid="customrecord_gpv_proposal_line">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlineediting>F</allowinlineediting>
+  <allowquicksearch>T</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Una factura de proveedor dentro de un concentrado. Guarda su estado y el nivel de aprobación en que va.</description>
+  <enabledle>T</enabledle>
+  <enablekeywords>F</enablekeywords>
+  <enablemailmerge>F</enablemailmerge>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>T</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>F</includename>
+  <isinactive>F</isinactive>
+  <isordered>F</isordered>
+  <recordname>GPV - Línea del concentrado</recordname>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>T</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>T</shownotes>
+  <showowner>T</showowner>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_proposal">
+      <accesslevel>2</accesslevel>
+      <description>Concentrado al que pertenece la línea.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Concentrado al que pertenece esta factura.</help>
+      <isparent>T</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Concentrado</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_gpv_payment_proposal]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_vendor_bill">
+      <accesslevel>2</accesslevel>
+      <description>Factura de proveedor que se autoriza.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Factura de proveedor incluida en el concentrado. Una factura no puede estar en dos concentrados abiertos.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Factura de proveedor</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-30</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_vendor">
+      <accesslevel>2</accesslevel>
+      <description>Proveedor de la factura al generar el concentrado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Proveedor de la factura, copiado al generar el concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Proveedor</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-3</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_amount">
+      <accesslevel>2</accesslevel>
+      <description>Monto de la factura al generar el concentrado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CURRENCY</fieldtype>
+      <help>Monto de la factura en su moneda, copiado al generar el concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Monto</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_currency">
+      <accesslevel>2</accesslevel>
+      <description>Moneda de la factura.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Moneda de la factura (MXN o USD).</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Moneda</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-122</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_due_date">
+      <accesslevel>2</accesslevel>
+      <description>Fecha de vencimiento de la factura.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>DATE</fieldtype>
+      <help>Fecha de vencimiento de la factura, copiada al generar el concentrado.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Vencimiento</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_status">
+      <accesslevel>2</accesslevel>
+      <description>Estado de la línea.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Pendiente, Autorizada, Descartada o Pagada. Lo actualiza la app; no se edita a mano.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Estado</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customlist_gpv_line_status]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_level">
+      <accesslevel>2</accesslevel>
+      <description>Nivel de aprobación que espera la línea.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Nivel que debe aprobar la factura (CFO, CEO 1, CEO 2). Vacío si la línea ya no está pendiente.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Nivel actual</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_gpv_approval_level]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_discard_reason">
+      <accesslevel>2</accesslevel>
+      <description>Motivo capturado al descartar.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXTAREA</fieldtype>
+      <help>Motivo que escribió el aprobador al descartar la factura.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Motivo de descarte</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_pl_discarded_by">
+      <accesslevel>2</accesslevel>
+      <description>Empleado que descartó la línea.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Aprobador que descartó la factura.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Descartada por</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-4</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+</customrecordtype>

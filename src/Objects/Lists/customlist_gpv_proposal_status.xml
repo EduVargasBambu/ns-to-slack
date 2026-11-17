@@ -1,0 +1,21 @@
+<customlist scriptid="customlist_gpv_proposal_status">
+  <description>Estado derivado del concentrado: Cerrado cuando todas sus líneas están autorizadas o descartadas.</description>
+  <isinactive>F</isinactive>
+  <ismatrixoption>F</ismatrixoption>
+  <isordered>T</isordered>
+  <name>GPV - Estado del concentrado</name>
+  <customvalues>
+    <customvalue scriptid="val_gpv_open">
+      <isinactive>F</isinactive>
+      <value>Abierto</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_closed">
+      <isinactive>F</isinactive>
+      <value>Cerrado</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_cancelled">
+      <isinactive>F</isinactive>
+      <value>Cancelado</value>
+    </customvalue>
+  </customvalues>
+</customlist>

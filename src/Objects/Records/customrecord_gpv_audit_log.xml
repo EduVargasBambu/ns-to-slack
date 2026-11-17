@@ -1,0 +1,154 @@
+<customrecordtype scriptid="customrecord_gpv_audit_log">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlineediting>F</allowinlineediting>
+  <allowquicksearch>T</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Evidencia de cada acción de autorización: quién, qué, sobre qué línea, en qué nivel, desde qué canal y cuándo (fecha de creación). No se edita ni se borra.</description>
+  <enabledle>T</enabledle>
+  <enablekeywords>F</enablekeywords>
+  <enablemailmerge>F</enablemailmerge>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>T</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>F</includename>
+  <isinactive>F</isinactive>
+  <isordered>F</isordered>
+  <recordname>GPV - Bitácora de autorización</recordname>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>T</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>T</shownotes>
+  <showowner>T</showowner>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_proposal">
+      <accesslevel>2</accesslevel>
+      <description>Concentrado de la línea.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Concentrado al que pertenece la factura sobre la que se actuó.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Concentrado</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_gpv_payment_proposal]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_line">
+      <accesslevel>2</accesslevel>
+      <description>Línea del concentrado sobre la que se actuó.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Línea del concentrado (factura) sobre la que se actuó.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Línea</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_gpv_proposal_line]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_level">
+      <accesslevel>2</accesslevel>
+      <description>Nivel en que estaba la línea al actuar.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Nivel de aprobación en que estaba la factura cuando se hizo la acción.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Nivel</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customrecord_gpv_approval_level]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_action">
+      <accesslevel>2</accesslevel>
+      <description>Acción realizada.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Aprobar o Descartar.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Acción</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customlist_gpv_action]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_employee">
+      <accesslevel>2</accesslevel>
+      <description>Empleado que hizo la acción.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Empleado de NetSuite que hizo la acción (el aprobador o su suplente).</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Empleado</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>-4</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_channel">
+      <accesslevel>2</accesslevel>
+      <description>Canal desde el que se actuó.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>SELECT</fieldtype>
+      <help>Slack o NetSuite.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Canal</label>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype>[scriptid=customlist_gpv_channel]</selectrecordtype>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_slack_user">
+      <accesslevel>2</accesslevel>
+      <description>ID del usuario de Slack, si la acción vino de Slack.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>ID del usuario de Slack (por ejemplo U0123456789) que hizo la acción. Vacío si se hizo desde NetSuite.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Usuario de Slack</label>
+      <maxlength>20</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_reason">
+      <accesslevel>2</accesslevel>
+      <description>Motivo capturado al descartar.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXTAREA</fieldtype>
+      <help>Motivo que escribió el aprobador al descartar la factura.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Motivo</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_al_idempotency_key">
+      <accesslevel>2</accesslevel>
+      <description>Clave única línea + nivel + acción.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>Clave que evita registrar dos veces la misma acción (reintentos de Slack o doble clic). La genera la app.</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Clave de idempotencia</label>
+      <maxlength>100</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+</customrecordtype>

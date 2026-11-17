@@ -1,0 +1,25 @@
+<customlist scriptid="customlist_gpv_line_status">
+  <description>Estado de una factura dentro del concentrado. El nivel pendiente (CFO, CEO 1, CEO 2) se guarda aparte en la línea.</description>
+  <isinactive>F</isinactive>
+  <ismatrixoption>F</ismatrixoption>
+  <isordered>T</isordered>
+  <name>GPV - Estado de línea</name>
+  <customvalues>
+    <customvalue scriptid="val_gpv_pending">
+      <isinactive>F</isinactive>
+      <value>Pendiente</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_authorized">
+      <isinactive>F</isinactive>
+      <value>Autorizada</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_discarded">
+      <isinactive>F</isinactive>
+      <value>Descartada</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_paid">
+      <isinactive>F</isinactive>
+      <value>Pagada</value>
+    </customvalue>
+  </customvalues>
+</customlist>

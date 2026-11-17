@@ -1,0 +1,85 @@
+<customrecordtype scriptid="customrecord_gpv_config">
+  <accesstype>CUSTRECORDENTRYPERM</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlineediting>F</allowinlineediting>
+  <allowquicksearch>F</allowquicksearch>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Configuración de la autorización de pagos. Debe existir un solo registro activo.</description>
+  <enabledle>T</enabledle>
+  <enablekeywords>F</enablekeywords>
+  <enablemailmerge>F</enablemailmerge>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>T</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>T</includename>
+  <isinactive>F</isinactive>
+  <isordered>F</isordered>
+  <recordname>GPV - Configuración de autorización de pagos</recordname>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>F</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>T</shownotes>
+  <showowner>F</showowner>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_gpv_cfg_pending_search">
+      <accesslevel>2</accesslevel>
+      <description>ID de la búsqueda guardada de facturas CXP aceptadas.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>ID de la búsqueda guardada (customsearch_...) que define las facturas pendientes de autorizar. Sus columnas son las del Excel del concentrado. La app le agrega el filtro "fuera de un concentrado activo".</help>
+      <isparent>F</isparent>
+      <ismandatory>T</ismandatory>
+      <label>Búsqueda de pendientes</label>
+      <maxlength>100</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_cfg_treasury_channel">
+      <accesslevel>2</accesslevel>
+      <description>ID del canal de Slack de Tesorería.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>ID del canal de Slack (por ejemplo C0123456789) donde se avisa a Tesorería de las facturas autorizadas.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Canal de Slack de Tesorería</label>
+      <maxlength>20</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_cfg_ap_channel">
+      <accesslevel>2</accesslevel>
+      <description>ID del canal de Slack de CXP.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>TEXT</fieldtype>
+      <help>ID del canal de Slack (por ejemplo C0123456789) donde se avisa a CXP de las facturas descartadas.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Canal de Slack de CXP</label>
+      <maxlength>20</maxlength>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_cfg_discard_reason_req">
+      <accesslevel>2</accesslevel>
+      <defaultchecked>T</defaultchecked>
+      <description>Si está marcado, descartar una factura exige motivo.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CHECKBOX</fieldtype>
+      <help>Si está marcado, el aprobador debe escribir un motivo al descartar una factura, en Slack o en NetSuite.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Motivo obligatorio al descartar</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+</customrecordtype>

@@ -1,0 +1,4 @@
+node_modules
+coverage
+src/FileCabinet/SuiteScripts/gpv_payment_authorization/ui/
+*.md

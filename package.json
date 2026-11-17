@@ -1,0 +1,30 @@
+{
+  "name": "ns-to-slack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Approve, reject, or select NetSuite vendor bills for payment from Slack (Gpo Vallas).",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p jsconfig.json"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@hitc/netsuite-types": "^2026.2.8",
+    "@oracle/suitecloud-unit-testing": "^1.9.1",
+    "@types/jest": "30.0.0",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "jest": "30.5.1",
+    "prettier": "^3.10.1",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "babel-plugin-istanbul": {
+      "test-exclude": "^8.0.0"
+    }
+  }
+}

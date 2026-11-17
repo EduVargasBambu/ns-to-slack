@@ -1,0 +1,17 @@
+<customlist scriptid="customlist_gpv_action">
+  <description>Acción de un aprobador sobre una línea del concentrado. Se usa en la bitácora.</description>
+  <isinactive>F</isinactive>
+  <ismatrixoption>F</ismatrixoption>
+  <isordered>T</isordered>
+  <name>GPV - Acción de autorización</name>
+  <customvalues>
+    <customvalue scriptid="val_gpv_approve">
+      <isinactive>F</isinactive>
+      <value>Aprobar</value>
+    </customvalue>
+    <customvalue scriptid="val_gpv_discard">
+      <isinactive>F</isinactive>
+      <value>Descartar</value>
+    </customvalue>
+  </customvalues>
+</customlist>
