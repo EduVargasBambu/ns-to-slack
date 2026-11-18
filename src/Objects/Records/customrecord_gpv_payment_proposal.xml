@@ -10,7 +10,6 @@
   <enablekeywords>F</enablekeywords>
   <enablemailmerge>F</enablemailmerge>
   <enablenumbering>T</enablenumbering>
-  <numberingcurrentnumber>1</numberingcurrentnumber>
   <numberinginit>1</numberinginit>
   <numberingmindigits>4</numberingmindigits>
   <numberingprefix>CON-</numberingprefix>

@@ -1,4 +1,14 @@
 <manifest projecttype="ACCOUNTCUSTOMIZATION">
-    <projectname>Gpo_Vallas_NS_to_Slack</projectname>
-    <frameworkversion>1.0</frameworkversion>
+  <projectname>Gpo_Vallas_NS_to_Slack</projectname>
+  <frameworkversion>1.0</frameworkversion>
+  <dependencies>
+    <features>
+      <feature required="true">ACCOUNTING</feature>
+      <feature required="false">MATRIXITEMS</feature>
+      <feature required="false">EXTREMELIST</feature>
+      <feature required="false">MAILMERGE</feature>
+      <feature required="true">CUSTOMRECORDS</feature>
+      <feature required="true">MULTICURRENCY</feature>
+    </features>
+  </dependencies>
 </manifest>
