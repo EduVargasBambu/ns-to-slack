@@ -21,5 +21,9 @@
       <isinactive>F</isinactive>
       <value>Pagada</value>
     </customvalue>
+    <customvalue scriptid="val_gpv_expired">
+      <isinactive>F</isinactive>
+      <value>Vencida</value>
+    </customvalue>
   </customvalues>
 </customlist>

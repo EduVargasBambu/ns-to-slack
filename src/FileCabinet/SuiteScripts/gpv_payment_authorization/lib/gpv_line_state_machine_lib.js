@@ -10,12 +10,15 @@ define(['N/error'], (/** @type {typeof import('N/error')} */ error) => {
     AUTHORIZED: 'AUTHORIZED',
     DISCARDED: 'DISCARDED',
     PAID: 'PAID',
+    EXPIRED: 'EXPIRED',
   });
 
   /** @enum {string} */
   const LineAction = Object.freeze({
     APPROVE: 'approve',
     DISCARD: 'discard',
+    // Weekly job: a line not authorized by Saturday restarts in next week's proposal.
+    EXPIRE: 'expire',
   });
 
   /**
@@ -25,7 +28,7 @@ define(['N/error'], (/** @type {typeof import('N/error')} */ error) => {
    */
 
   /**
-   * Returns the state of a line after an approver acts on it. Does not mutate the input.
+   * Returns the state of a line after an approver or the weekly expiry acts on it. Does not mutate the input.
    *
    * @param {object} options
    * @param {LineState} options.state Current state of the line.
@@ -37,7 +40,7 @@ define(['N/error'], (/** @type {typeof import('N/error')} */ error) => {
    * @throws {error.SuiteScriptError} GPV_INVALID_STATE if a pending line has no valid level.
    */
   const applyAction = ({ state, action, levelCount }) => {
-    if (action !== LineAction.APPROVE && action !== LineAction.DISCARD) {
+    if (!(/** @type {string[]} */ (Object.values(LineAction)).includes(action))) {
       throw error.create({ name: 'GPV_INVALID_ACTION', message: `Unknown action: ${action}` });
     }
     if (state.status !== LineStatus.PENDING) {
@@ -55,6 +58,9 @@ define(['N/error'], (/** @type {typeof import('N/error')} */ error) => {
     }
     if (action === LineAction.DISCARD) {
       return { status: LineStatus.DISCARDED, level: null };
+    }
+    if (action === LineAction.EXPIRE) {
+      return { status: LineStatus.EXPIRED, level: null };
     }
     return level < levelCount
       ? { status: LineStatus.PENDING, level: level + 1 }

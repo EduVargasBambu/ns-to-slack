@@ -7,11 +7,12 @@ Antes de escribir código, lee:
 
 Responde en español. El código va en inglés.
 
-## Estado (17 nov 2026)
+## Estado (18 nov 2026)
 - Convenciones v0.2: patrón de IDs y glosario confirmados.
 - Repo: git en `main` con remoto `origin` (GitHub `EduVargasBambu/ns-to-slack`). Configs de ESLint, Prettier y `jsconfig` (checkJs) y estructura de carpetas listas.
 - Tooling verificado: Node 22, `npm test` (Jest), `npm run lint` (ESLint 10), `npm run typecheck` (TypeScript 7, solo `src/`), `npm run format:check` (Prettier; los `.md` se excluyen).
 - Fase 1, librerías puras listas con tests en verde: `gpv_line_state_machine_lib`, `gpv_legacy_lib`, `gpv_constants_lib`.
-- Objetos SDF escritos (sin validar en NS): listas en `src/Objects/Lists/`, registros en `src/Objects/Records/` (approval_level, config, payment_proposal, proposal_line, audit_log), campos nativos en `src/Objects/Fields/` (`custbody_gpv_authorization_status`, `custentity_gpv_slack_user`). La bitácora registra también intentos no autorizados y limpiezas de legado.
-- Validación y deploy con la extensión SuiteCloud de VS Code (no se usa la CLI global). Pendiente: validar el proyecto contra el sandbox y confirmar que `~/Objects/*` de `deploy.xml` incluye las subcarpetas.
+- Objetos SDF validados y desplegados en el sandbox (18 nov): listas en `src/Objects/Lists/`, registros en `src/Objects/Records/` (approval_level, config, payment_proposal, proposal_line, audit_log), campos nativos en `src/Objects/Fields/` (`custbody_gpv_authorization_status`, `custentity_gpv_slack_user`). La bitácora registra también intentos no autorizados y limpiezas de legado.
+- Validación y deploy con la extensión SuiteCloud de VS Code (no se usa la CLI global). `~/Objects/*` de `deploy.xml` sí incluye las subcarpetas. En SDF, "texto en línea" es `displaytype` `LOCKED` (no `INLINE`).
 - Reglas de legado (decididas 17 nov): aprobaciones previas fuera de orden → la línea arranca en nivel 1; las tres aprobadas → nace Autorizada. Con huecos, al generar el concentrado se **limpian** los campos legados aprobados (`getLevelsToClear`) para que la factura vuelva a pasar por cada nivel.
+- Ciclo semanal (decidido 18 nov): dos Scheduled Scripts. **Lunes**: genera el concentrado y lo publica en Slack; día/hora en el deployment (no en Configuración), se puede ejecutar a mano y no duplica si ya hay concentrado con esa fecha de junta. **Sábado**: las líneas aún Pendientes pasan a **Vencida** (acción de bitácora "Vencimiento semanal"), la factura queda disponible, se limpian sus campos legados (así la regla de legado solo aplica la primera vez) y el concentrado se cierra. Las Autorizadas no se tocan.

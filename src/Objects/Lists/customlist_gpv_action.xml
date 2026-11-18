@@ -21,5 +21,9 @@
       <isinactive>F</isinactive>
       <value>Limpieza de aprobaciones previas</value>
     </customvalue>
+    <customvalue scriptid="val_gpv_weekly_expiry">
+      <isinactive>F</isinactive>
+      <value>Vencimiento semanal</value>
+    </customvalue>
   </customvalues>
 </customlist>

@@ -51,6 +51,13 @@ describe('applyAction: discard', () => {
   });
 });
 
+describe('applyAction: expire', () => {
+  it.each([1, 2, 3])('expires a line still pending at level %i', (level) => {
+    const next = applyAction({ state: pendingAt(level), action: LineAction.EXPIRE, levelCount: 3 });
+    expect(next).toEqual({ status: LineStatus.EXPIRED, level: null });
+  });
+});
+
 describe('applyAction: invalid transitions', () => {
   it.each([
     ['approve', LineStatus.AUTHORIZED],
@@ -59,6 +66,12 @@ describe('applyAction: invalid transitions', () => {
     ['discard', LineStatus.AUTHORIZED],
     ['discard', LineStatus.DISCARDED],
     ['discard', LineStatus.PAID],
+    ['approve', LineStatus.EXPIRED],
+    ['discard', LineStatus.EXPIRED],
+    ['expire', LineStatus.AUTHORIZED],
+    ['expire', LineStatus.DISCARDED],
+    ['expire', LineStatus.PAID],
+    ['expire', LineStatus.EXPIRED],
   ])('rejects %s on a %s line', (action, status) => {
     const err = catchError(() =>
       applyAction({ state: { status, level: null }, action, levelCount: 3 }),
