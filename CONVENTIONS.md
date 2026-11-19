@@ -106,6 +106,7 @@ Gpo_Vallas_NS_to_Slack/
       Lists/                                  # customlist_*
       Records/                                # customrecord_* (con sus campos custrecord_*)
       Fields/                                 # campos de registros nativos (custbody_*, custentity_*)
+      Scripts/                                # customscript_* (con sus deployments)
     FileCabinet/SuiteScripts/gpv_payment_authorization/
       lib/        # núcleo: lógica de negocio, sin dependencia del canal
       slack/      # cliente, verificación de firma, Block Kit, router de interacciones
@@ -171,7 +172,8 @@ Gpo_Vallas_NS_to_Slack/
 - Comillas simples, punto y coma, 2 espacios, ancho de 100.
 - JSDoc obligatorio en las funciones exportadas de `lib/` y `slack/`: `@param`, `@returns` y `@throws` si aplica.
 - Errores de negocio con `error.create({ name: 'GPV_<CODE>', message })`, con códigos en `UPPER_SNAKE`. Ejemplo: `GPV_NOT_CURRENT_APPROVER`.
-- Logs con `N/log` y título fijo por módulo: `log.audit('gpv_dispatcher_mr', ...)`. **Nunca se registran tokens ni payloads completos de Slack.**
+- Logs con el objeto global `log` (`log.debug`, `log.audit`, `log.error`, `log.emergency`). **No se importa `N/log`**: NetSuite lo carga por defecto en todos los scripts. Título fijo por módulo: `log.audit('gpv_dispatcher_mr', ...)`. **Nunca se registran tokens ni payloads completos de Slack.**
+- `log.error` registra un error; `error.create` (de `N/error`) lo lanza. Son cosas distintas: `N/error` sí se importa.
 
 ## 10. Tests
 

@@ -1,0 +1,24 @@
+<scheduledscript scriptid="customscript_gpv_slack_smoke_test_ss">
+  <description>Prueba de humo: manda "Hola desde NetSuite" al canal de Tesorería.</description>
+  <isinactive>F</isinactive>
+  <name>GPV - Prueba de humo Slack</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/gpv_payment_authorization/scripts/gpv_slack_smoke_test_ss.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_gpv_slack_smoke_test_ss">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>GPV - Prueba de humo Slack</title>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2026-11-19</startdate>
+          <starttime>08:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

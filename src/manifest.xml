@@ -9,6 +9,7 @@
       <feature required="false">MAILMERGE</feature>
       <feature required="true">CUSTOMRECORDS</feature>
       <feature required="true">MULTICURRENCY</feature>
+      <feature required="true">SERVERSIDESCRIPTING</feature>
     </features>
   </dependencies>
 </manifest>

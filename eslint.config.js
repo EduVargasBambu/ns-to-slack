@@ -17,7 +17,7 @@ module.exports = [
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'script',
-      globals: { define: 'readonly' },
+      globals: { define: 'readonly', log: 'readonly' },
     },
     rules: {
       'no-var': 'error',
