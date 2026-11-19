@@ -21,5 +21,34 @@ define([], () => {
     SLACK_SIGNING_SECRET: 'custsecret_gpv_slack_signing_secret',
   };
 
-  return { LEGACY_APPROVED_VALUE, Config, Secret };
+  const AuditLog = {
+    RECORD: 'customrecord_gpv_audit_log',
+    PROPOSAL: 'custrecord_gpv_al_proposal',
+    LINE: 'custrecord_gpv_al_line',
+    LEVEL: 'custrecord_gpv_al_level',
+    ACTION: 'custrecord_gpv_al_action',
+    EMPLOYEE: 'custrecord_gpv_al_employee',
+    CHANNEL: 'custrecord_gpv_al_channel',
+    SLACK_USER: 'custrecord_gpv_al_slack_user',
+    REASON: 'custrecord_gpv_al_reason',
+    IDEMPOTENCY_KEY: 'custrecord_gpv_al_idempotency_key',
+  };
+
+  /** Custom lists and the scriptid of each value. Values are resolved to internal IDs at runtime. */
+  const ActionList = {
+    ID: 'customlist_gpv_action',
+    APPROVE: 'val_gpv_approve',
+    DISCARD: 'val_gpv_discard',
+    UNAUTHORIZED: 'val_gpv_unauthorized',
+    CLEAR_LEGACY: 'val_gpv_clear_legacy',
+    WEEKLY_EXPIRY: 'val_gpv_weekly_expiry',
+  };
+
+  const ChannelList = {
+    ID: 'customlist_gpv_channel',
+    SLACK: 'val_gpv_slack',
+    NETSUITE: 'val_gpv_netsuite',
+  };
+
+  return { LEGACY_APPROVED_VALUE, Config, Secret, AuditLog, ActionList, ChannelList };
 });
