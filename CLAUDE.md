@@ -7,6 +7,8 @@ Antes de escribir código, lee:
 
 Responde en español. El código va en inglés.
 
+Documentación en `docs/`: `documentacion-tecnica.md` (desarrollo) y `manual-usuario.md` (usuarios, sin IDs ni código). Al cerrar cada pieza o tomar una decisión, actualiza lo que corresponda en ambos. Para PDF: `../../NS to Slack/md2html.py` y luego imprimir.
+
 ## Estado (18 nov 2026)
 - Convenciones v0.2: patrón de IDs y glosario confirmados.
 - Repo: git en `main` con remoto `origin` (GitHub `EduVargasBambu/ns-to-slack`). Configs de ESLint, Prettier y `jsconfig` (checkJs) y estructura de carpetas listas.
