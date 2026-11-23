@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Centro de Autorización</title>
+    <style>
+      :root {
+        --bg: #f3f5f8;
+        --surface: #ffffff;
+        --surface-2: #f8f9fb;
+        --text: #18202e;
+        --muted: #586274;
+        --faint: #8a93a3;
+        --line: #e3e7ee;
+        --line-strong: #cfd5df;
+        --primary: #1a5fd6;
+        --primary-hover: #154fb3;
+        --primary-tint: #edf3fd;
+        --danger: #b42318;
+        --danger-tint: #fdf0ee;
+        --ok-bg: #e8f5ec;
+        --ok-text: #18592b;
+        --err-bg: #fdecea;
+        --err-text: #8a1c14;
+        --radius: 12px;
+        --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 2px 8px rgba(16, 24, 40, 0.04);
+        --shadow-bar: 0 -4px 16px rgba(16, 24, 40, 0.08);
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      ::selection {
+        background: #cfe0fb;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.45 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        padding-bottom: 190px;
+        accent-color: var(--primary);
+      }
+      :focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      /* Top bar */
+      .topbar {
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+      }
+      .topbar-inner,
+      main,
+      .bar-inner {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .topbar-inner {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+      h1 {
+        font-size: 1.2rem;
+        letter-spacing: -0.01em;
+        margin: 0;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      #who {
+        font-size: 0.9rem;
+      }
+      main {
+        padding-top: 20px;
+      }
+
+      /* Group card */
+      .group {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .group-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 20px;
+        flex-wrap: wrap;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .group-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .group-head h2 {
+        font-size: 1.02rem;
+        margin: 0;
+      }
+      .level {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: var(--primary-tint);
+        padding: 3px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .group-stats {
+        display: flex;
+        gap: 6px 18px;
+        flex-wrap: wrap;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+      .group-stats strong {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        /* Same column widths in every group, so groups line up. */
+        table-layout: fixed;
+      }
+      .col-bill {
+        width: 26%;
+      }
+      .col-due {
+        width: 120px;
+      }
+      th.col-amount {
+        width: 190px;
+      }
+      th {
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--surface-2);
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr {
+        transition: background-color 150ms ease-out;
+        cursor: pointer;
+      }
+      tbody tr:hover {
+        background: var(--surface-2);
+      }
+      tbody tr:has(input:checked) {
+        background: var(--primary-tint);
+      }
+      .col-check {
+        width: 48px;
+        padding-left: 16px;
+        padding-right: 4px;
+      }
+      .col-amount {
+        text-align: right;
+        padding-right: 16px;
+      }
+      .vendor {
+        font-weight: 600;
+        overflow-wrap: break-word;
+      }
+      .bill a {
+        color: var(--primary);
+        text-underline-offset: 3px;
+        text-decoration-thickness: 1px;
+        overflow-wrap: break-word;
+      }
+      .due {
+        color: var(--muted);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .amount {
+        font-weight: 600;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .currency {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--faint);
+        margin-right: 6px;
+      }
+      input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        vertical-align: middle;
+        cursor: pointer;
+      }
+
+      /* Phones: each row becomes a compact card */
+      @media (max-width: 640px) {
+        table,
+        tbody {
+          display: block;
+        }
+        thead {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+        }
+        tbody tr {
+          display: grid;
+          grid-template-columns: 36px 1fr auto;
+          grid-template-areas:
+            'check vendor vendor'
+            'check bill amount'
+            'check due due';
+          column-gap: 8px;
+          row-gap: 2px;
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--line);
+        }
+        tbody tr:last-child {
+          border-bottom: 0;
+        }
+        td {
+          padding: 0;
+          border: 0;
+        }
+        td.col-check {
+          grid-area: check;
+          padding: 2px 0 0;
+          width: auto;
+        }
+        td.vendor {
+          grid-area: vendor;
+          min-width: 0;
+        }
+        td.bill {
+          grid-area: bill;
+          font-size: 0.88rem;
+        }
+        td.due {
+          grid-area: due;
+          font-size: 0.85rem;
+        }
+        td.due::before {
+          content: 'vence ';
+        }
+        td.col-amount {
+          grid-area: amount;
+          padding: 0;
+          align-self: center;
+        }
+      }
+      .select-all-mobile {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        color: var(--muted);
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--line);
+      }
+      @media (max-width: 640px) {
+        .select-all-mobile {
+          display: flex;
+        }
+      }
+
+      /* Loading and empty states */
+      .skeleton {
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #eceff3 0%, #f6f7f9 50%, #eceff3 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s ease-in-out infinite;
+      }
+      .skeleton-row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      @keyframes shimmer {
+        from {
+          background-position: 200% 0;
+        }
+        to {
+          background-position: -200% 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .skeleton {
+          animation: none;
+        }
+        tbody tr {
+          transition: none;
+        }
+      }
+      .empty {
+        text-align: center;
+        padding: 48px 20px;
+      }
+      .empty strong {
+        display: block;
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+      }
+
+      /* Action bar */
+      .bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        box-shadow: var(--shadow-bar);
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+      }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 20px;
+        flex-wrap: wrap;
+      }
+      #summary {
+        font-size: 0.95rem;
+        font-variant-numeric: tabular-nums;
+      }
+      #summary strong {
+        color: var(--text);
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 11px 20px;
+        min-height: 44px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition:
+          background-color 150ms ease-out,
+          border-color 150ms ease-out,
+          opacity 150ms ease-out;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .primary:not(:disabled):hover {
+        background: var(--primary-hover);
+      }
+      .danger {
+        background: var(--surface);
+        color: var(--danger);
+        border-color: #e7b4ae;
+      }
+      .danger:not(:disabled):hover {
+        background: var(--danger-tint);
+        border-color: var(--danger);
+      }
+      .ghost {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--line-strong);
+      }
+      .ghost:hover {
+        background: var(--surface-2);
+      }
+      @media (max-width: 640px) {
+        .actions {
+          width: 100%;
+        }
+        .actions button {
+          flex: 1;
+        }
+      }
+      .message {
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+      }
+      .message.ok {
+        background: var(--ok-bg);
+        color: var(--ok-text);
+      }
+      .message.error {
+        background: var(--err-bg);
+        color: var(--err-text);
+      }
+
+      /* Discard dialog */
+      dialog {
+        border: 0;
+        border-radius: var(--radius);
+        width: min(480px, calc(100% - 32px));
+        padding: 20px;
+        box-shadow: 0 12px 40px rgba(16, 24, 40, 0.2);
+      }
+      dialog::backdrop {
+        background: rgba(16, 24, 40, 0.4);
+      }
+      dialog h2 {
+        font-size: 1.05rem;
+        margin: 0 0 4px;
+      }
+      dialog label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 14px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 96px;
+        font: inherit;
+        padding: 10px;
+        margin: 6px 0 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        resize: vertical;
+      }
+      dialog .actions {
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <h1>Centro de Autorización</h1>
+        <div id="who" class="muted"></div>
+      </div>
+    </header>
+    <main>
+      <div id="groups" aria-busy="true"></div>
+    </main>
+    <footer class="bar">
+      <div class="bar-inner">
+        <div id="message" role="status" aria-live="polite"></div>
+        <div class="bar-row">
+          <div id="summary" class="muted">Selecciona facturas</div>
+          <div class="actions">
+            <button id="discard" class="danger" disabled>Descartar…</button>
+            <button id="approve" class="primary" disabled>Aprobar</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <dialog id="discard-dialog" aria-labelledby="discard-title">
+      <form method="dialog">
+        <h2 id="discard-title">Descartar facturas</h2>
+        <div class="muted">Las facturas regresan a pendientes para un concentrado futuro.</div>
+        <label for="reason">Motivo</label>
+        <textarea id="reason" maxlength="1000"></textarea>
+        <div class="actions">
+          <button value="cancel" class="ghost">Cancelar</button>
+          <button value="confirm" class="danger">Descartar</button>
+        </div>
+      </form>
+    </dialog>
+    <script>
+      (() => {
+        const money = new Intl.NumberFormat('es-MX', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        const $ = (id) => document.getElementById(id);
+        /** lineId -> line, for the selected totals. */
+        let linesById = new Map();
+        let busy = false;
+
+        const url = (action) => {
+          const u = new URL(window.location.href);
+          u.searchParams.set('action', action);
+          return u.toString();
+        };
+
+        const el = (tag, attrs = {}, children = []) => {
+          const node = document.createElement(tag);
+          Object.entries(attrs).forEach(([k, v]) => {
+            if (k === 'text') node.textContent = v;
+            else node.setAttribute(k, v);
+          });
+          children.forEach((c) => node.appendChild(c));
+          return node;
+        };
+
+        const formatTotals = (totals) =>
+          Object.keys(totals)
+            .sort()
+            .map((code) => `${code} $${money.format(totals[code])}`)
+            .join(' · ');
+
+        const selectedIds = () =>
+          [...document.querySelectorAll('input[data-line]:checked')].map((i) => i.dataset.line);
+
+        const selectedTotals = (ids) => {
+          const totals = {};
+          ids.forEach((id) => {
+            const line = linesById.get(id);
+            totals[line.currency] = (totals[line.currency] || 0) + line.amount;
+          });
+          return totals;
+        };
+
+        const refreshFooter = () => {
+          const ids = selectedIds();
+          const summary = $('summary');
+          if (busy) {
+            summary.textContent = 'Procesando…';
+          } else if (ids.length) {
+            summary.replaceChildren(
+              el('strong', { text: `${ids.length} seleccionadas` }),
+              document.createTextNode(` · ${formatTotals(selectedTotals(ids))}`),
+            );
+          } else {
+            summary.textContent = 'Selecciona facturas';
+          }
+          $('approve').disabled = busy || !ids.length;
+          $('discard').disabled = busy || !ids.length;
+          $('approve').textContent = ids.length > 1 ? `Aprobar ${ids.length}` : 'Aprobar';
+        };
+
+        const showMessage = (text, kind) => {
+          const box = $('message');
+          box.replaceChildren();
+          if (text) box.appendChild(el('div', { class: `message ${kind}`, text }));
+        };
+
+        const renderSkeleton = () => {
+          const rows = [0, 1, 2, 3].map(() =>
+            el('div', { class: 'skeleton-row' }, [
+              el('div', { class: 'skeleton', style: 'width:20px;height:20px' }),
+              el('div', { class: 'skeleton', style: 'flex:2' }),
+              el('div', { class: 'skeleton', style: 'flex:1' }),
+              el('div', { class: 'skeleton', style: 'width:110px' }),
+            ]),
+          );
+          $('groups').replaceChildren(el('section', { class: 'group' }, rows));
+        };
+
+        const renderLine = (line) => {
+          const box = el('input', {
+            type: 'checkbox',
+            'data-line': line.lineId,
+            'aria-label': `Seleccionar ${line.vendor || 'factura'} ${line.billNumber || ''}`,
+          });
+          box.addEventListener('change', refreshFooter);
+          const billLink = el('a', {
+            href: `/app/accounting/transactions/vendbill.nl?id=${encodeURIComponent(line.billId)}`,
+            target: '_blank',
+            rel: 'noopener',
+            text: line.billNumber || 'Ver factura',
+          });
+          const row = el('tr', {}, [
+            el('td', { class: 'col-check' }, [box]),
+            el('td', { class: 'vendor', text: line.vendor || 'Proveedor' }),
+            el('td', { class: 'bill' }, [billLink]),
+            el('td', { class: 'due', text: line.dueDate || '—' }),
+            el('td', { class: 'col-amount' }, [
+              el('span', { class: 'amount' }, [
+                el('span', { class: 'currency', text: line.currency }),
+                document.createTextNode(`$${money.format(line.amount)}`),
+              ]),
+            ]),
+          ]);
+          // Clicking anywhere on the row toggles it; links and the box keep their own click.
+          row.addEventListener('click', (e) => {
+            if (e.target.closest('a, input')) return;
+            box.checked = !box.checked;
+            refreshFooter();
+          });
+          return row;
+        };
+
+        const renderGroup = (group) => {
+          const label = `concentrado del ${group.meetingDate}, ${group.levelName}`;
+          const allBoxes = [
+            el('input', { type: 'checkbox', 'aria-label': `Seleccionar todas: ${label}` }),
+            el('input', { type: 'checkbox', id: `all-${group.proposalId}-${group.levelId}` }),
+          ];
+          const rows = group.lines.map(renderLine);
+          const lineBoxes = () => rows.map((r) => r.querySelector('input'));
+          allBoxes.forEach((all) =>
+            all.addEventListener('change', () => {
+              lineBoxes().forEach((b) => {
+                b.checked = all.checked;
+              });
+              allBoxes.forEach((other) => {
+                other.checked = all.checked;
+              });
+              refreshFooter();
+            }),
+          );
+
+          const head = el('div', { class: 'group-head' }, [
+            el('div', { class: 'group-title' }, [
+              el('h2', { text: `Concentrado del ${group.meetingDate}` }),
+              el('span', { class: 'level', text: `Nivel: ${group.levelName}` }),
+            ]),
+            el('div', { class: 'group-stats' }, [
+              el('span', {}, [
+                el('strong', { text: String(group.lines.length) }),
+                document.createTextNode(group.lines.length === 1 ? ' factura' : ' facturas'),
+              ]),
+              ...Object.keys(group.totals)
+                .sort()
+                .map((code) =>
+                  el('span', {}, [
+                    document.createTextNode(`${code} `),
+                    el('strong', { text: `$${money.format(group.totals[code])}` }),
+                  ]),
+                ),
+            ]),
+          ]);
+          const mobileAll = el('label', { class: 'select-all-mobile', for: allBoxes[1].id }, [
+            allBoxes[1],
+            document.createTextNode('Seleccionar todas'),
+          ]);
+          const table = el('table', {}, [
+            el('thead', {}, [
+              el('tr', {}, [
+                el('th', { class: 'col-check', scope: 'col' }, [allBoxes[0]]),
+                el('th', { scope: 'col', text: 'Proveedor' }),
+                el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
+                el('th', { class: 'col-due', scope: 'col', text: 'Vence' }),
+                el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
+              ]),
+            ]),
+            el('tbody', {}, rows),
+          ]);
+          return el('section', { class: 'group', 'aria-label': label }, [head, mobileAll, table]);
+        };
+
+        const load = async () => {
+          const res = await fetch(url('pending'), { credentials: 'same-origin' });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'No se pudieron cargar las facturas.');
+          $('who').textContent = data.userName;
+          linesById = new Map();
+          data.groups.forEach((g) => g.lines.forEach((l) => linesById.set(l.lineId, l)));
+          const container = $('groups');
+          container.replaceChildren(
+            ...(data.groups.length
+              ? data.groups.map(renderGroup)
+              : [
+                  el('section', { class: 'group empty' }, [
+                    el('strong', { text: 'Estás al día' }),
+                    el('span', {
+                      class: 'muted',
+                      text: 'No tienes facturas esperando tu autorización.',
+                    }),
+                  ]),
+                ]),
+          );
+          container.setAttribute('aria-busy', 'false');
+          refreshFooter();
+        };
+
+        const describe = (counts) => {
+          const approved = (counts.ADVANCED || 0) + (counts.AUTHORIZED || 0);
+          const parts = [];
+          if (approved) parts.push(`Aprobaste ${approved}`);
+          if (counts.AUTHORIZED) parts.push(`${counts.AUTHORIZED} quedaron autorizadas`);
+          if (counts.DISCARDED) parts.push(`Descartaste ${counts.DISCARDED}`);
+          if (counts.NOT_PENDING) parts.push(`${counts.NOT_PENDING} ya no estaban pendientes`);
+          if (counts.UNAUTHORIZED) parts.push(`${counts.UNAUTHORIZED} no te correspondían`);
+          if (counts.NOT_PROCESSED) {
+            parts.push(
+              `faltan ${counts.NOT_PROCESSED}: vuelve a seleccionarlas y da clic otra vez`,
+            );
+          }
+          return `${parts.join('. ')}.`;
+        };
+
+        const send = async (action, reason) => {
+          const lineIds = selectedIds();
+          busy = true;
+          showMessage('');
+          refreshFooter();
+          try {
+            const res = await fetch(url(action), {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json', 'X-GPV-Request': '1' },
+              body: JSON.stringify({ lineIds, reason }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            showMessage(describe(data.counts), 'ok');
+            await load();
+          } catch (e) {
+            showMessage(e.message || 'No se pudo completar.', 'error');
+          } finally {
+            busy = false;
+            refreshFooter();
+          }
+        };
+
+        $('approve').addEventListener('click', () => {
+          const ids = selectedIds();
+          const totals = formatTotals(selectedTotals(ids));
+          if (window.confirm(`¿Confirmas aprobar ${ids.length} facturas por ${totals}?`)) {
+            send('approve');
+          }
+        });
+
+        const dialog = $('discard-dialog');
+        $('discard').addEventListener('click', () => {
+          $('reason').value = '';
+          dialog.showModal();
+        });
+        dialog.addEventListener('close', () => {
+          if (dialog.returnValue === 'confirm') send('discard', $('reason').value);
+        });
+
+        renderSkeleton();
+        load().catch((e) => {
+          $('groups').replaceChildren();
+          showMessage(e.message, 'error');
+        });
+      })();
+    </script>
+  </body>
+</html>

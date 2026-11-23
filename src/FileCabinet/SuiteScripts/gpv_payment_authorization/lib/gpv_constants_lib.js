@@ -70,6 +70,10 @@ define([], () => {
   /** File Cabinet folder for the proposal CSV files; resolved through a placeholder file. */
   const PROPOSAL_FOLDER_MARKER = '/SuiteScripts/gpv_payment_authorization/proposals/README.txt';
 
+  /** Page of the Approval Center, served by gpv_approval_center_sl. */
+  const APPROVAL_CENTER_PAGE =
+    '/SuiteScripts/gpv_payment_authorization/ui/gpv_approval_center.html';
+
   /** Custom lists and the scriptid of each value. Values are resolved to internal IDs at runtime. */
   const ProposalStatusList = {
     ID: 'customlist_gpv_proposal_status',
@@ -112,6 +116,7 @@ define([], () => {
     ProposalLine,
     VendorBill,
     PROPOSAL_FOLDER_MARKER,
+    APPROVAL_CENTER_PAGE,
     ProposalStatusList,
     LineStatusList,
     ActionList,

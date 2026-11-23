@@ -16,6 +16,7 @@ define([
   './gpv_approval_level_lib',
   './gpv_proposal_lib',
   './gpv_line_state_machine_lib',
+  './gpv_currency_lib',
 ], (
   /** @type {typeof import('N/search')} */ search,
   /** @type {typeof import('N/record')} */ record,
@@ -27,6 +28,7 @@ define([
   levelLib,
   proposalLib,
   stateMachine,
+  currencyLib,
 ) => {
   const { Proposal, ProposalLine, VendorBill, ProposalStatusList, LineStatusList } = constants;
   const { LineStatus } = stateMachine;
@@ -162,20 +164,6 @@ define([
     }
   };
 
-  /** @returns {Record<string, string>} Currency internal id -> ISO code (MXN, USD...). */
-  const getCurrencyCodes = () => {
-    /** @type {Record<string, string>} */
-    const codes = {};
-    search
-      .create({ type: search.Type.CURRENCY, columns: ['symbol'] })
-      .run()
-      .each((result) => {
-        codes[String(result.id)] = String(result.getValue('symbol'));
-        return true;
-      });
-    return codes;
-  };
-
   /** @param {string} proposalId */
   const getLines = (proposalId) => {
     /** @type {{ billId: string, amount: number, currencyId: string, statusId: string, levelId: string }[]} */
@@ -256,7 +244,7 @@ define([
    */
   const finalize = (proposalId, searchId, levels, meetingDate) => {
     const lines = getLines(proposalId);
-    const codes = getCurrencyCodes();
+    const codes = currencyLib.getCurrencyCodes();
     const pendingId = lineStatusId(LineStatus.PENDING);
     const authorizedId = lineStatusId(LineStatus.AUTHORIZED);
 

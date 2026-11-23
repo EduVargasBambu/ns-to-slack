@@ -1,0 +1,21 @@
+<suitelet scriptid="customscript_gpv_approval_center_sl">
+  <description>Centro de Autorización: cada aprobador ve sus facturas pendientes y las aprueba o descarta con su sesión de NetSuite.</description>
+  <isinactive>F</isinactive>
+  <name>GPV - Centro de Autorización</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/gpv_payment_authorization/scripts/gpv_approval_center_sl.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_gpv_approval_center_sl">
+      <allemployees>T</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>GPV - Centro de Autorización</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

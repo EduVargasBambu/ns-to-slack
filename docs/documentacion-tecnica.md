@@ -61,7 +61,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | `customscript_gpv_weekly_proposal_ss` | Scheduled | Concentrado semanal (lunes). Probado en el sandbox (23 nov) |
 | `customscript_gpv_weekly_expiry_ss` | Scheduled | Vencimiento semanal (sábado). Probado en el sandbox (23 nov) |
 | `customscript_gpv_slack_gateway_sl` | Suitelet externo | Verifica la firma de Slack. Slack no puede llegar directo (ver 4.3); queda para usarse detrás del Worker |
-| Centro de Autorización | Suitelet interno | **(pendiente)** |
+| `customscript_gpv_approval_center_sl` | Suitelet interno | Centro de Autorización (v1). Probado en el sandbox (23 nov) |
 
 ### 4.1 Concentrado semanal
 
@@ -94,6 +94,16 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - Descartar: la factura queda Descartada y se limpian todas sus casillas; la línea guarda motivo y quién descartó. El motivo es obligatorio si así lo dice la Configuración.
 - Orden de escritura: factura → bitácora (con llave de idempotencia) → línea. Un doble clic o una línea que ya avanzó no escribe nada. Un intento de alguien que no es el aprobador se registra en la bitácora ("Intento no autorizado") y no cambia nada.
 - Gobernanza: ~30 unidades por línea; un Suitelet tiene 1,000. El llamador pasa `hasBudget`: si se acaban las unidades, el servicio se detiene limpio y devuelve las líneas restantes como `NOT_PROCESSED` ("faltan N, da clic otra vez"). Nunca queda una línea a medias. Plan para el Centro: hasta ~25 líneas al momento; más, a segundo plano (Map/Reduce).
+
+### 4.5 Centro de Autorización
+
+- Suitelet **interno** (sesión de NS). `GET` sirve `ui/gpv_approval_center.html`; la página llama a `GET ?action=pending` y a `POST ?action=approve|discard`.
+- Cada aprobador ve solo las líneas Pendientes en los niveles donde es aprobador o suplente (`gpv_pending_lines_lib`), agrupadas por concentrado y nivel, con totales por moneda y enlace a la factura.
+- El empleado sale de `runtime.getCurrentUser()`, nunca de la petición; el servicio vuelve a validar el nivel.
+- CSRF: los POST exigen JSON y el encabezado `X-GPV-Request: 1`. XSS: la página pinta todo con `textContent`.
+- Errores: solo `GPV_INVALID_REQUEST` y `GPV_DISCARD_REASON_REQUIRED` se muestran tal cual; lo demás se registra en el log y el usuario ve un mensaje genérico.
+- Lotes: ~25-30 líneas por clic; el resto vuelve como "faltan N, da clic otra vez" (`NOT_PROCESSED`).
+- Página v1 en HTML + JS sin framework. Si crece, se puede cambiar por la SPA (Preact) sin tocar el API.
 
 ## 5. Configuración inicial
 

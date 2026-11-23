@@ -40,9 +40,14 @@ Se ve en la factura, en el campo **Estado de autorización de pago**.
 
 ### Aprobar desde Slack **(pendiente)**
 
-### Descartar una factura **(pendiente)**
+### Aprobar o descartar desde NetSuite (Centro de Autorización)
 
-### Aprobar desde NetSuite **(pendiente)**
+1. Abre el **Centro de Autorización** (desde el botón "Ver en NetSuite" del mensaje de Slack, o desde NetSuite). Funciona en el celular.
+2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado, con totales en MXN y USD. El número de factura abre la factura con sus adjuntos.
+3. Marca las facturas (o "seleccionar todas" del grupo). Abajo verás cuántas y por cuánto.
+4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada.
+5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez desde el Director.
+6. Si seleccionas muchas facturas, puede que se procesen por partes: el mensaje te dirá cuántas faltan para que des clic otra vez.
 
 ### Aprobar antes de la junta (Director)
 

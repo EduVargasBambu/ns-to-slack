@@ -46,8 +46,8 @@ coverage
 .env
 .env.*
 
-# SPA build output (generated before deploy)
-src/FileCabinet/SuiteScripts/gpv_payment_authorization/ui/
-
 # Claude Code local settings
 .claude/settings.local.json
+
+# Editor plugin cache
+.impeccable/

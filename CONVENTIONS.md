@@ -112,7 +112,7 @@ Gpo_Vallas_NS_to_Slack/
       slack/      # cliente, verificación de firma, Block Kit, router de interacciones
       scripts/    # entry points (sl, mr, ue, ...)
       render/     # plantillas PDF (fase 5)
-      ui/         # build de la SPA (generado, no se edita a mano)
+      ui/         # páginas servidas por Suitelets (v1: HTML a mano; si pasa a SPA, será el build generado)
   ui-src/          # código fuente de la SPA (TS + Vite + Preact)
   __tests__/       # replica la estructura de lib/ y slack/
   types/           # declaraciones globales para checkJs (p. ej. define de AMD)
