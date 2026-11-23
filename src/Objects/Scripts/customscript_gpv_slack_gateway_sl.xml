@@ -1,0 +1,22 @@
+<suitelet scriptid="customscript_gpv_slack_gateway_sl">
+  <description>Puerta de entrada pública para la interactividad de Slack. Solo atiende peticiones con firma válida de Slack.</description>
+  <isinactive>F</isinactive>
+  <name>GPV - Gateway de Slack</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/gpv_payment_authorization/scripts/gpv_slack_gateway_sl.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_gpv_slack_gateway_sl">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <isdeployed>T</isdeployed>
+      <isonline>T</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>GPV - Gateway de Slack</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

@@ -2,7 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  * @NModuleScope SameAccount
- * @description Smoke test: resolves a list value by scriptid and posts "Hola desde NetSuite" to treasury.
+ * @description Smoke test: resolves a list value by scriptid and posts "Hola desde NetSuite" with a
+ * gateway test button to treasury.
  */
 define([
   'N/error',
@@ -26,7 +27,25 @@ define([
       });
     }
 
-    const result = slackClient.postMessage(treasuryChannel, 'Hola desde NetSuite :wave:');
+    // The button tests the gateway (Fase 4, piece 1): its click must arrive signed.
+    const text = 'Hola desde NetSuite :wave:';
+    const result = slackClient.call('chat.postMessage', {
+      channel: treasuryChannel,
+      text,
+      blocks: [
+        { type: 'section', text: { type: 'mrkdwn', text } },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              action_id: 'gpv_gateway_test',
+              text: { type: 'plain_text', text: 'Probar gateway' },
+            },
+          ],
+        },
+      ],
+    });
     log.audit(TITLE, `Mensaje enviado. channel=${result.channel} ts=${result.ts}`);
   };
 

@@ -10,6 +10,7 @@
       <feature required="true">CUSTOMRECORDS</feature>
       <feature required="true">MULTICURRENCY</feature>
       <feature required="true">SERVERSIDESCRIPTING</feature>
+      <feature required="false">CRM</feature>
     </features>
   </dependencies>
 </manifest>
