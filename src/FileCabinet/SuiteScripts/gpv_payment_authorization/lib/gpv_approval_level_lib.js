@@ -26,6 +26,8 @@ define(['N/search', './gpv_constants_lib', './gpv_proposal_lib'], (
           search.createColumn({ name: ApprovalLevel.ORDER, sort: search.Sort.ASC }),
           'name',
           ApprovalLevel.APPROVAL_FIELD,
+          ApprovalLevel.APPROVER,
+          ApprovalLevel.SUBSTITUTE,
         ],
       })
       .run()
@@ -35,6 +37,8 @@ define(['N/search', './gpv_constants_lib', './gpv_proposal_lib'], (
           name: String(result.getValue('name')),
           order: Number(result.getValue(ApprovalLevel.ORDER)),
           approvalField: String(result.getValue(ApprovalLevel.APPROVAL_FIELD) || '').trim(),
+          approverId: String(result.getValue(ApprovalLevel.APPROVER) || ''),
+          substituteId: String(result.getValue(ApprovalLevel.SUBSTITUTE) || ''),
         });
         return true;
       });

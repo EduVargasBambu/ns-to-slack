@@ -59,6 +59,8 @@ define([], () => {
     DUE_DATE: 'custrecord_gpv_pl_due_date',
     STATUS: 'custrecord_gpv_pl_status',
     LEVEL: 'custrecord_gpv_pl_level',
+    DISCARD_REASON: 'custrecord_gpv_pl_discard_reason',
+    DISCARDED_BY: 'custrecord_gpv_pl_discarded_by',
   };
 
   const VendorBill = {

@@ -9,4 +9,8 @@ type GpvLevel = {
   order: number;
   /** Bill checkbox (custbody_gpv_*_approval) that records this level's approval. */
   approvalField: string;
+  /** Employee internal id allowed to approve this level. */
+  approverId: string;
+  /** Optional stand-in approver; '' when there is none. */
+  substituteId: string;
 };

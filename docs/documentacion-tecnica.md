@@ -60,7 +60,8 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | `customscript_gpv_slack_smoke_test_ss` | Scheduled | Prueba de salida a Slack |
 | `customscript_gpv_weekly_proposal_ss` | Scheduled | Concentrado semanal (lunes). Probado en el sandbox (23 nov) |
 | `customscript_gpv_weekly_expiry_ss` | Scheduled | Vencimiento semanal (sábado). Probado en el sandbox (23 nov) |
-| Gateway de Slack | Suitelet | **(pendiente: Fase 4)** |
+| `customscript_gpv_slack_gateway_sl` | Suitelet externo | Verifica la firma de Slack. Slack no puede llegar directo (ver 4.3); queda para usarse detrás del Worker |
+| Centro de Autorización | Suitelet interno | **(pendiente)** |
 
 ### 4.1 Concentrado semanal
 
@@ -78,6 +79,21 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - Una línea Pendiente sin nivel válido también se vence, para no dejar su factura fuera de los concentrados futuros.
 - **Reanudable:** se reprograma si quedan menos de 200 unidades. Los concentrados abiertos se cierran solo cuando ya no queda ninguna línea Pendiente.
 - Las líneas Autorizadas no se tocan. No publica nada en Slack.
+
+### 4.3 Entrada desde Slack
+
+- NetSuite rechaza con **405**, en su borde, los POST externos cuyo User-Agent es el de Slack (`Slackbot 1.0`). Pasan sin User-Agent o con uno de navegador. No está documentado por NetSuite; se comprobó en el sandbox el 23 nov.
+- Por eso la vía principal es: DM de Slack con enlace → **Centro de Autorización interno** (el aprobador entra con su sesión de NS).
+- Botones nativos de Slack (futuro): un **Cloudflare Worker** recibe el clic y lo reenvía tal cual al gateway (cuerpo y encabezados de firma, sin el User-Agent de Slack). El Worker no guarda secretos; NetSuite verifica la firma. Alternativa si NetSuite cambia el filtro: Worker → RESTlet con TBA.
+- Configuración del gateway: Socket Mode **apagado** en la Slack app; deployment "Disponible sin inicio de sesión", Audiencia con todos los roles y **Subsidiarias vacías** (con subsidiarias, NetSuite responde "no tienes privilegios"); ejecuta como Administrador (pendiente: rol mínimo).
+
+### 4.4 Aprobar y descartar
+
+- `gpv_approval_service_lib` (`approve`, `discard`) es el núcleo de todas las vías. El nivel y el aprobador salen de la línea y de los niveles configurados, nunca de la petición. Puede aprobar el aprobador o el suplente del nivel en que va la línea.
+- Aprobar: marca la casilla del nivel en la factura y avanza la línea; en el último nivel la factura y la línea quedan **Autorizadas**.
+- Descartar: la factura queda Descartada y se limpian todas sus casillas; la línea guarda motivo y quién descartó. El motivo es obligatorio si así lo dice la Configuración.
+- Orden de escritura: factura → bitácora (con llave de idempotencia) → línea. Un doble clic o una línea que ya avanzó no escribe nada. Un intento de alguien que no es el aprobador se registra en la bitácora ("Intento no autorizado") y no cambia nada.
+- Gobernanza: ~30 unidades por línea; un Suitelet tiene 1,000. El llamador pasa `hasBudget`: si se acaban las unidades, el servicio se detiene limpio y devuelve las líneas restantes como `NOT_PROCESSED` ("faltan N, da clic otra vez"). Nunca queda una línea a medias. Plan para el Centro: hasta ~25 líneas al momento; más, a segundo plano (Map/Reduce).
 
 ## 5. Configuración inicial
 
@@ -113,6 +129,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | 18 nov 2026 | Al descartar se limpian las casillas de la factura |
 | 23 nov 2026 | Casillas de aprobación propias en SDF (los campos del prototipo solo existían en el sandbox) |
 | 23 nov 2026 | El Director es el nivel 1, con un aprobador general (no por área) |
+| 23 nov 2026 | Slack no puede llamar directo a NetSuite (405 por User-Agent). Vía principal: DM con enlace al Centro de Autorización interno; botones nativos después, con un Cloudflare Worker |
 
 ## 8. Pendientes y riesgos
 
@@ -120,3 +137,5 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - "Expediente completo" (XML, PDF, Constancia) como filtro de entrada: por definir.
 - Director por área: por ahora un solo aprobador.
 - La búsqueda de pendientes definitiva aún no existe (la del sandbox es de prueba).
+- El gateway ejecuta como Administrador: crear un rol mínimo antes de PROD.
+- Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
