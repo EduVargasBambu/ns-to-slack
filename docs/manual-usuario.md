@@ -48,7 +48,11 @@ Se ve en la factura, en el campo **Estado de autorización de pago**.
 
 En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al concentrado, pasará directo al CFO.
 
-## 6. Para CXP **(pendiente)**
+## 6. Para CXP
+
+- **Cada lunes** llega al canal de CXP en Slack el resumen del concentrado: cuántas facturas, los totales en MXN y USD, y cuántas esperan a cada nivel.
+- **El archivo del concentrado** (CSV, se abre en Excel) queda adjunto al registro del concentrado en NetSuite, con las mismas columnas de la búsqueda de pendientes.
+- **Si hace falta generarlo a mano**, se puede ejecutar el script desde NetSuite. Si ya existe el concentrado de ese día, no se crea otro: se completa el mismo.
 
 ## 7. Para Tesorería **(pendiente)**
 

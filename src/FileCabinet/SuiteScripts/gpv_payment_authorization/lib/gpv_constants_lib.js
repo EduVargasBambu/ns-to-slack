@@ -31,7 +31,61 @@ define([], () => {
     IDEMPOTENCY_KEY: 'custrecord_gpv_al_idempotency_key',
   };
 
+  const ApprovalLevel = {
+    RECORD: 'customrecord_gpv_approval_level',
+    ORDER: 'custrecord_gpv_lvl_order',
+    APPROVER: 'custrecord_gpv_lvl_approver',
+    SUBSTITUTE: 'custrecord_gpv_lvl_substitute',
+    /** Bill checkbox (custbody_gpv_*_approval) that records this level's approval. */
+    APPROVAL_FIELD: 'custrecord_gpv_lvl_legacy_field',
+  };
+
+  const Proposal = {
+    RECORD: 'customrecord_gpv_payment_proposal',
+    MEETING_DATE: 'custrecord_gpv_pp_meeting_date',
+    STATUS: 'custrecord_gpv_pp_status',
+    TOTAL_MXN: 'custrecord_gpv_pp_total_mxn',
+    TOTAL_USD: 'custrecord_gpv_pp_total_usd',
+    FILE: 'custrecord_gpv_pp_excel_file',
+  };
+
+  const ProposalLine = {
+    RECORD: 'customrecord_gpv_proposal_line',
+    PROPOSAL: 'custrecord_gpv_pl_proposal',
+    VENDOR_BILL: 'custrecord_gpv_pl_vendor_bill',
+    VENDOR: 'custrecord_gpv_pl_vendor',
+    AMOUNT: 'custrecord_gpv_pl_amount',
+    CURRENCY: 'custrecord_gpv_pl_currency',
+    DUE_DATE: 'custrecord_gpv_pl_due_date',
+    STATUS: 'custrecord_gpv_pl_status',
+    LEVEL: 'custrecord_gpv_pl_level',
+  };
+
+  const VendorBill = {
+    AUTHORIZATION_STATUS: 'custbody_gpv_authorization_status',
+  };
+
+  /** File Cabinet folder for the proposal CSV files; resolved through a placeholder file. */
+  const PROPOSAL_FOLDER_MARKER = '/SuiteScripts/gpv_payment_authorization/proposals/README.txt';
+
   /** Custom lists and the scriptid of each value. Values are resolved to internal IDs at runtime. */
+  const ProposalStatusList = {
+    ID: 'customlist_gpv_proposal_status',
+    OPEN: 'val_gpv_open',
+    CLOSED: 'val_gpv_closed',
+    CANCELLED: 'val_gpv_cancelled',
+  };
+
+  /** Keys match LineStatus in gpv_line_state_machine_lib. */
+  const LineStatusList = {
+    ID: 'customlist_gpv_line_status',
+    PENDING: 'val_gpv_pending',
+    AUTHORIZED: 'val_gpv_authorized',
+    DISCARDED: 'val_gpv_discarded',
+    PAID: 'val_gpv_paid',
+    EXPIRED: 'val_gpv_expired',
+  };
+
   const ActionList = {
     ID: 'customlist_gpv_action',
     APPROVE: 'val_gpv_approve',
@@ -47,5 +101,18 @@ define([], () => {
     NETSUITE: 'val_gpv_netsuite',
   };
 
-  return { Config, Secret, AuditLog, ActionList, ChannelList };
+  return {
+    Config,
+    Secret,
+    AuditLog,
+    ApprovalLevel,
+    Proposal,
+    ProposalLine,
+    VendorBill,
+    PROPOSAL_FOLDER_MARKER,
+    ProposalStatusList,
+    LineStatusList,
+    ActionList,
+    ChannelList,
+  };
 });

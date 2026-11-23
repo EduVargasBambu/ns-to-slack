@@ -1,0 +1,31 @@
+<scheduledscript scriptid="customscript_gpv_weekly_proposal_ss">
+  <description>Genera el concentrado semanal con la búsqueda de pendientes, guarda el CSV y publica el resumen en el canal de CXP. Se puede ejecutar a mano: el mismo día continúa el mismo concentrado.</description>
+  <isinactive>F</isinactive>
+  <name>GPV - Concentrado semanal</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/gpv_payment_authorization/scripts/gpv_weekly_proposal_ss.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_gpv_weekly_proposal_ss">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>GPV - Concentrado semanal</title>
+      <recurrence>
+        <weekly>
+          <everyxweeks>1</everyxweeks>
+          <friday>F</friday>
+          <monday>T</monday>
+          <saturday>F</saturday>
+          <startdate>2026-11-30</startdate>
+          <starttime>08:00:00Z</starttime>
+          <sunday>F</sunday>
+          <thursday>F</thursday>
+          <tuesday>F</tuesday>
+          <wednesday>F</wednesday>
+        </weekly>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>
