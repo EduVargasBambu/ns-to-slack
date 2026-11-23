@@ -1,0 +1,15 @@
+<transactionbodycustomfield scriptid="custbody_gpv_ceo1_approval">
+  <accesslevel>2</accesslevel>
+  <bodypurchase>T</bodypurchase>
+  <defaultchecked>F</defaultchecked>
+  <description>Aprobación del CEO 1 (Co-CEO BB) en la autorización de pagos.</description>
+  <displaytype>NORMAL</displaytype>
+  <fieldtype>CHECKBOX</fieldtype>
+  <help>Aprobación del CEO 1 (Co-CEO BB) en la autorización de pagos. La app la marca al aprobar en este nivel. Si ya viene marcada al generar el concentrado, la factura arranca en el nivel siguiente.</help>
+  <isparent>F</isparent>
+  <ismandatory>F</ismandatory>
+  <label>CO - CEO - BB</label>
+  <searchlevel>2</searchlevel>
+  <showinlist>T</showinlist>
+  <storevalue>T</storevalue>
+</transactionbodycustomfield>

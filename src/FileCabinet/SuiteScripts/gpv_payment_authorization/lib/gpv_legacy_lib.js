@@ -1,19 +1,19 @@
 /**
  * @NApiVersion 2.1
  * @NModuleScope SameAccount
- * @description Pure rules for approvals recorded by the previous flow (custbody11/10/9).
+ * @description Pure rules for approvals already checked on the bill (custbody_gpv_*_approval)
+ * when it enters a proposal, e.g. a Director who approved before the meeting.
  * Approvals only count when they form an unbroken chain from level 1; otherwise the
  * bill starts over at level 1 and every out-of-order approval is cleared.
  */
-define(['./gpv_constants_lib', './gpv_line_state_machine_lib'], (constants, stateMachine) => {
+define(['./gpv_line_state_machine_lib'], (stateMachine) => {
   const { LineStatus } = stateMachine;
 
   /**
-   * @param {unknown} value Raw value of a legacy approval field.
+   * @param {unknown} value Raw checkbox value: true from N/record, true or 'T' from N/search.
    * @returns {boolean}
    */
-  const isApproved = (value) =>
-    value !== null && value !== undefined && String(value) === constants.LEGACY_APPROVED_VALUE;
+  const isApproved = (value) => value === true || value === 'T';
 
   /**
    * @param {unknown[]} legacyValues Legacy field values ordered by level (index 0 = level 1).

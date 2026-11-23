@@ -8,10 +8,9 @@ jest.mock('N/error', () => ({
 const { getStartingState, getLevelsToClear } = legacy;
 const { LineStatus } = stateMachine;
 
-// Legacy values come from the vendor bill list fields ordered by level:
-// [custbody11 (CFO), custbody10 (CEO 1), custbody9 (CEO 2)]. '1' = approved.
-const APPROVED = '1';
-const EMPTY = '';
+// Values come from the vendor bill approval checkboxes ordered by level.
+const APPROVED = true;
+const EMPTY = false;
 
 describe('getStartingState', () => {
   it('starts at level 1 when there are no previous approvals', () => {
@@ -53,15 +52,15 @@ describe('getStartingState', () => {
     });
   });
 
-  it.each([null, undefined, '2', 'T'])('treats %p as not approved', (value) => {
+  it.each([null, undefined, '', 'F', '1', 1])('treats %p as not approved', (value) => {
     expect(getStartingState([value, EMPTY, EMPTY])).toEqual({
       status: LineStatus.PENDING,
       level: 1,
     });
   });
 
-  it('treats the numeric value 1 as approved', () => {
-    expect(getStartingState([1, EMPTY, EMPTY])).toEqual({ status: LineStatus.PENDING, level: 2 });
+  it("treats the search value 'T' as approved", () => {
+    expect(getStartingState(['T', EMPTY, EMPTY])).toEqual({ status: LineStatus.PENDING, level: 2 });
   });
 
   it('follows the number of configured levels', () => {

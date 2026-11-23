@@ -137,7 +137,7 @@ Gpo_Vallas_NS_to_Slack/
 | Concentrado | `PaymentProposal` | `customrecord_gpv_payment_proposal` |
 | Línea del concentrado | `ProposalLine` | `customrecord_gpv_proposal_line` |
 | Junta | `meeting` | `custrecord_gpv_pp_meeting_date` |
-| Nivel de aprobación (CFO, CEO 1, CEO 2) | `ApprovalLevel` | `customrecord_gpv_approval_level` |
+| Nivel de aprobación (Director, CFO, CEO 1, CEO 2) | `ApprovalLevel` | `customrecord_gpv_approval_level` |
 | Aprobar / Descartar (acciones de bitácora: también Intento no autorizado / Limpieza de aprobaciones previas) | `approve` / `discard` (`unauthorized` / `clear_legacy`) | `customlist_gpv_action` |
 | Estado de la línea | `LineStatus` (`PENDING`, `AUTHORIZED`, `DISCARDED`, `PAID`) | `customlist_gpv_line_status` |
 | Estado del concentrado (Abierto / Cerrado / Cancelado) | `ProposalStatus` (`OPEN`, `CLOSED`, `CANCELLED`) | `customlist_gpv_proposal_status` |
@@ -148,7 +148,7 @@ Gpo_Vallas_NS_to_Slack/
 | Cola saliente | `OutboundQueue` | `customrecord_gpv_outbound_queue` |
 | Mensaje de Slack | `SlackMessage` | `customrecord_gpv_slack_message` |
 | Configuración | `Config` | `customrecord_gpv_config` |
-| Campos legados `custbody11/10/9` | `legacy` | (existentes) |
+| Casillas de aprobación por nivel en la factura | `legacy` | `custbody_gpv_dir_approval`, `custbody_gpv_cfo_approval`, `custbody_gpv_ceo1_approval`, `custbody_gpv_ceo2_approval` |
 | Centro de Autorización | `ApprovalCenter` | `customscript_gpv_approval_center_sl` |
 | Despachador | `dispatcher` | `customscript_gpv_dispatcher_mr` |
 | Recordatorios | `reminders` | `customscript_gpv_reminders_mr` |

@@ -69,13 +69,13 @@
     </customrecordcustomfield>
     <customrecordcustomfield scriptid="custrecord_gpv_lvl_legacy_field">
       <accesslevel>2</accesslevel>
-      <description>ID del campo de la factura donde el flujo anterior registraba la aprobación de este nivel (custbody11, custbody10, custbody9).</description>
+      <description>ID de la casilla de la factura que registra la aprobación de este nivel (custbody_gpv_*_approval).</description>
       <displaytype>NORMAL</displaytype>
       <fieldtype>TEXT</fieldtype>
-      <help>ID del campo de la factura de proveedor que guarda la aprobación de este nivel en el flujo anterior. Ejemplo: custbody11 para CFO. La app lo lee al generar el concentrado y lo escribe al aprobar.</help>
+      <help>ID de la casilla de la factura de proveedor que guarda la aprobación de este nivel. Ejemplo: custbody_gpv_dir_approval para el Director. La app la lee al generar el concentrado y la marca al aprobar.</help>
       <isparent>F</isparent>
       <ismandatory>F</ismandatory>
-      <label>Campo legado</label>
+      <label>Campo de aprobación</label>
       <maxlength>40</maxlength>
       <searchlevel>2</searchlevel>
       <showinlist>T</showinlist>
