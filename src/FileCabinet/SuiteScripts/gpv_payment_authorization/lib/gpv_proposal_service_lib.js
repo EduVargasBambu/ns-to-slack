@@ -38,13 +38,19 @@ define([
   const toDateText = (/** @type {Date} */ date) =>
     String(format.format({ value: date, type: format.Type.DATE }));
 
-  /** @returns {string|null} */
+  /** @returns {string|null} Open proposal for the date; a closed one is never continued. */
   const findProposal = (/** @type {Date} */ meetingDate) => {
     const [result] = search
       .create({
         type: Proposal.RECORD,
         filters: [
           [Proposal.MEETING_DATE, 'on', toDateText(meetingDate)],
+          'AND',
+          [
+            Proposal.STATUS,
+            'anyof',
+            listLib.getValueId(ProposalStatusList.ID, ProposalStatusList.OPEN),
+          ],
           'AND',
           ['isinactive', 'is', 'F'],
         ],

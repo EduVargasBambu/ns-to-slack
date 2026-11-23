@@ -18,7 +18,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 1. **Lunes (`customscript_gpv_weekly_proposal_ss`):** genera el concentrado con la búsqueda de pendientes, guarda un CSV con las columnas de la búsqueda y publica un resumen (totales por moneda y facturas por nivel) en el canal de CXP. Ver 4.1.
 2. Cada nivel aprueba o descarta sus facturas, en orden: Director → CFO → CEO 1 → CEO 2. **(pendiente: Fase 4)**
 3. Al aprobar el último nivel, la factura queda **Autorizada** y se avisa a Tesorería. **(pendiente)**
-4. **Sábado (Scheduled Script):** las líneas aún Pendientes pasan a **Vencida**, la factura queda disponible para otro concentrado y el concentrado se cierra.
+4. **Sábado (`customscript_gpv_weekly_expiry_ss`):** las líneas aún Pendientes pasan a **Vencida**, la factura queda disponible para otro concentrado y el concentrado se cierra.
 
 ### Reglas
 
@@ -59,7 +59,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 |---|---|---|
 | `customscript_gpv_slack_smoke_test_ss` | Scheduled | Prueba de salida a Slack |
 | `customscript_gpv_weekly_proposal_ss` | Scheduled | Concentrado semanal (lunes). Probado en el sandbox (23 nov) |
-| Vencimiento semanal (sábado) | Scheduled | **(pendiente)** |
+| `customscript_gpv_weekly_expiry_ss` | Scheduled | Vencimiento semanal (sábado). Probado en el sandbox (23 nov) |
 | Gateway de Slack | Suitelet | **(pendiente: Fase 4)** |
 
 ### 4.1 Concentrado semanal
@@ -70,6 +70,14 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - **Cierre:** totales MXN y USD en el concentrado, CSV en `SuiteScripts/gpv_payment_authorization/proposals/` (`concentrado_AAAA-MM-DD.csv`, UTF-8 con BOM para Excel) ligado al concentrado, y resumen en Slack.
 - **Sin facturas:** no crea concentrado; publica "No hay facturas pendientes".
 - **Límites conocidos:** si una ejecución reprogramada arranca después de medianoche, abre un concentrado con la fecha nueva. Si el script se cae entre crear la línea y marcar la factura, la factura puede quedar con dos líneas.
+
+### 4.2 Vencimiento semanal
+
+- Toma todas las líneas en **Pendiente**. Por cada una: la factura pasa a Vencida y se limpian sus casillas de aprobación; se registra "Vencimiento semanal" en la bitácora; la línea pasa a Vencida y se queda sin nivel.
+- **Orden:** primero la factura y después la línea. Si el script se corta, la línea sigue Pendiente y el siguiente intento repite la factura (mismos valores) y la bitácora (idempotente). Nunca queda una factura atorada en Pendiente.
+- Una línea Pendiente sin nivel válido también se vence, para no dejar su factura fuera de los concentrados futuros.
+- **Reanudable:** se reprograma si quedan menos de 200 unidades. Los concentrados abiertos se cierran solo cuando ya no queda ninguna línea Pendiente.
+- Las líneas Autorizadas no se tocan. No publica nada en Slack.
 
 ## 5. Configuración inicial
 
@@ -88,7 +96,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 6. Capturar el ID de Slack en el registro de empleado de cada aprobador.
 7. Invitar al bot de Slack al canal de CXP.
-8. Programar el deployment del lunes (`customdeploy_gpv_weekly_proposal_ss`: ya trae la recurrencia semanal del lunes, pero se despliega como No programado) y el del sábado **(pendiente)**.
+8. Programar el deployment del lunes (`customdeploy_gpv_weekly_proposal_ss`: ya trae la recurrencia semanal del lunes, pero se despliega como No programado) y el del sábado (`customdeploy_gpv_weekly_expiry_ss`, también No programado con la recurrencia del sábado).
 
 ## 6. Desarrollo
 

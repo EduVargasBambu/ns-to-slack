@@ -1,0 +1,31 @@
+<scheduledscript scriptid="customscript_gpv_weekly_expiry_ss">
+  <description>Vence las líneas aún pendientes, regresa sus facturas a pendientes (limpia las casillas de aprobación) y cierra los concentrados abiertos. Las autorizadas no se tocan.</description>
+  <isinactive>F</isinactive>
+  <name>GPV - Vencimiento semanal</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/gpv_payment_authorization/scripts/gpv_weekly_expiry_ss.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_gpv_weekly_expiry_ss">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>GPV - Vencimiento semanal</title>
+      <recurrence>
+        <weekly>
+          <everyxweeks>1</everyxweeks>
+          <friday>F</friday>
+          <monday>F</monday>
+          <saturday>T</saturday>
+          <startdate>2026-11-28</startdate>
+          <starttime>08:00:00Z</starttime>
+          <sunday>F</sunday>
+          <thursday>F</thursday>
+          <tuesday>F</tuesday>
+          <wednesday>F</wednesday>
+        </weekly>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>
