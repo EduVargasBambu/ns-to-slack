@@ -4,6 +4,8 @@
  * @description Pure Slack messages: the approver's DM and the treasury notice.
  */
 define(['./gpv_proposal_message_lib'], (proposalMessage) => {
+  /** Discard notice lists at most this many bills; the rest is summarized. */
+  const MAX_LISTED = 20;
   const { formatAmount } = proposalMessage;
   /**
    * Escapes text from NetSuite (vendor names, bill numbers) so Slack shows it literally and it
@@ -131,5 +133,39 @@ define(['./gpv_proposal_message_lib'], (proposalMessage) => {
     ].join('\n');
   };
 
-  return { escapeMrkdwn, buildApproverDm, buildTreasuryMessage, buildApprovalConfirmation };
+  /**
+   * Notice to the AP channel with the bills just discarded: who, why, and which bills.
+   * @param {object} options
+   * @param {{ vendor: string, billNumber: string, amount: number, currency: string }[]} options.lines
+   * @param {string} options.employeeName Who discarded.
+   * @param {string} options.reason '' when none was given.
+   * @returns {string|null} Slack mrkdwn, null when nothing was discarded.
+   */
+  const buildDiscardNotice = ({ lines, employeeName, reason }) => {
+    if (!lines.length) return null;
+    const n = lines.length;
+    const listed = lines
+      .slice(0, MAX_LISTED)
+      .map(
+        (l) =>
+          `• ${escapeMrkdwn(l.vendor)} · ${escapeMrkdwn(l.billNumber)} · ${l.currency} $${formatAmount(l.amount)}`,
+      );
+    if (n > MAX_LISTED) listed.push(`…y ${n - MAX_LISTED} más`);
+
+    return [
+      `*🚫 ${n} ${n === 1 ? 'factura descartada' : 'facturas descartadas'}* por ${escapeMrkdwn(employeeName)}`,
+      ...(reason ? [`Motivo: ${escapeMrkdwn(reason)}`] : []),
+      'Regresan a pendientes para un concentrado futuro.',
+      '',
+      ...listed,
+    ].join('\n');
+  };
+
+  return {
+    escapeMrkdwn,
+    buildApproverDm,
+    buildTreasuryMessage,
+    buildApprovalConfirmation,
+    buildDiscardNotice,
+  };
 });

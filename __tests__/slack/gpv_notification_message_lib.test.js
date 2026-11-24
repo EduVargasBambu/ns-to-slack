@@ -1,6 +1,12 @@
 import messages from '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/slack/gpv_notification_message_lib';
 
-const { escapeMrkdwn, buildApproverDm, buildTreasuryMessage, buildApprovalConfirmation } = messages;
+const {
+  escapeMrkdwn,
+  buildApproverDm,
+  buildTreasuryMessage,
+  buildApprovalConfirmation,
+  buildDiscardNotice,
+} = messages;
 
 const URL = 'https://1234.app.netsuite.com/app/site/hosting/scriptlet.nl?script=1&deploy=1';
 
@@ -113,5 +119,53 @@ describe('buildApprovalConfirmation', () => {
 
   it('returns null when nothing was approved', () => {
     expect(buildApprovalConfirmation({ lines: [], nextLevels: [], authorizedCount: 0 })).toBeNull();
+  });
+});
+
+describe('buildDiscardNotice', () => {
+  const line = (n, currency = 'MXN') => ({
+    vendor: `Proveedor <${n}>`,
+    billNumber: `F-${n}`,
+    amount: 1000.5,
+    currency,
+  });
+
+  it('lists the discarded bills with who and why, escaped', () => {
+    expect(
+      buildDiscardNotice({
+        lines: [line(1), line(2, 'USD')],
+        employeeName: 'Ana <López>',
+        reason: 'Falta <XML>',
+      }),
+    ).toBe(
+      [
+        '*🚫 2 facturas descartadas* por Ana &lt;López&gt;',
+        'Motivo: Falta &lt;XML&gt;',
+        'Regresan a pendientes para un concentrado futuro.',
+        '',
+        '• Proveedor &lt;1&gt; · F-1 · MXN $1,000.50',
+        '• Proveedor &lt;2&gt; · F-2 · USD $1,000.50',
+      ].join('\n'),
+    );
+  });
+
+  it('uses singular and omits the reason line when there is none', () => {
+    const text = buildDiscardNotice({ lines: [line(1)], employeeName: 'Ana', reason: '' });
+    expect(text).toContain('*🚫 1 factura descartada* por Ana');
+    expect(text).not.toContain('Motivo:');
+  });
+
+  it('lists at most 20 bills', () => {
+    const text = buildDiscardNotice({
+      lines: Array.from({ length: 23 }, (_, i) => line(i)),
+      employeeName: 'Ana',
+      reason: '',
+    });
+    expect(text).toContain('…y 3 más');
+    expect(text.split('\n').filter((l) => l.startsWith('• '))).toHaveLength(20);
+  });
+
+  it('returns null with no bills', () => {
+    expect(buildDiscardNotice({ lines: [], employeeName: 'Ana', reason: '' })).toBeNull();
   });
 });

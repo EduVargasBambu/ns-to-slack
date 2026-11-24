@@ -133,7 +133,7 @@ define([
           ? approvalService.approve(options)
           : approvalService.discard({ ...options, reason });
       // Notices never fail the request: the approval is already saved.
-      notifier.notifyAfterAction(results, employeeId);
+      notifier.notifyAfterAction(results, { employeeId, employeeName: user.name, reason });
       sendJson(response, { ok: true, counts: countOutcomes(results) });
     } catch (e) {
       const err = /** @type {{ name?: string, message?: string }} */ (e);

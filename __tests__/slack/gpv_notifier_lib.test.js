@@ -72,7 +72,7 @@ beforeEach(() => {
     custentity_gpv_slack_user: SLACK_IDS[id],
   }));
   pendingLines.findForEmployee.mockReturnValue([GROUP]);
-  configLib.getConfig.mockReturnValue({ treasuryChannel: 'CTREAS' });
+  configLib.getConfig.mockReturnValue({ treasuryChannel: 'CTREAS', apChannel: 'CAP' });
 });
 
 describe('notifyLevels', () => {
@@ -136,7 +136,7 @@ describe('notifyAfterAction', () => {
         { lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null },
         { lineId: '9', outcome: 'DISCARDED' },
       ],
-      '100',
+      { employeeId: '100', employeeName: 'Ana' },
     );
     expect(slackClient.postMessage).toHaveBeenCalledWith(
       'U100',
@@ -162,8 +162,35 @@ describe('notifyAfterAction', () => {
       throw new Error('GPV_CONFIG_NOT_FOUND');
     });
     expect(() =>
-      notifier.notifyAfterAction([{ lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null }]),
+      notifier.notifyAfterAction([{ lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null }], {
+        employeeId: '100',
+        employeeName: 'Ana',
+      }),
     ).not.toThrow();
     expect(global.log.error).toHaveBeenCalled();
+  });
+
+  it('posts discarded bills to the AP channel with who and why', () => {
+    pendingLines.findByIds.mockReturnValue([
+      { vendor: 'Prov', billNumber: 'F-9', amount: 5, currency: 'MXN' },
+    ]);
+    notifier.notifyAfterAction([{ lineId: '9', outcome: 'DISCARDED' }], {
+      employeeId: '100',
+      employeeName: 'Ana',
+      reason: 'Falta XML',
+    });
+    expect(pendingLines.findByIds).toHaveBeenCalledWith(['9']);
+    expect(slackClient.postMessage).toHaveBeenCalledTimes(1);
+    const [channel, text] = slackClient.postMessage.mock.calls[0];
+    expect(channel).toBe('CAP');
+    expect(text).toContain('*🚫 1 factura descartada* por Ana');
+    expect(text).toContain('Motivo: Falta XML');
+    expect(text).toContain('• Prov · F-9 · MXN $5.00');
+  });
+
+  it('skips the discard notice without an AP channel', () => {
+    configLib.getConfig.mockReturnValue({ treasuryChannel: 'CTREAS', apChannel: '' });
+    expect(notifier.notifyDiscarded(['9'], 'Ana', '')).toBe(false);
+    expect(slackClient.postMessage).not.toHaveBeenCalled();
   });
 });

@@ -64,6 +64,8 @@ En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al con
 
 ## 6. Para CXP
 
+**Facturas descartadas:** cuando un directivo descarta facturas, llega un aviso al canal de CXP en Slack con quién las descartó, el motivo y la lista de facturas (proveedor, folio y monto). Esas facturas regresan a pendientes y pueden entrar a un concentrado futuro, empezando otra vez desde el Director.
+
 **Prioridad de Proveedor:** en el registro del proveedor, el campo **Prioridad de Proveedor** (Alto, Medio o Bajo) define en qué orden salen sus facturas en el Centro de Autorización. Es opcional: los proveedores sin prioridad salen al final. Si cambias la prioridad, el orden se ajusta solo, incluso en concentrados que ya se generaron.
 
 - **Cada lunes** llega al canal de CXP en Slack el resumen del concentrado: cuántas facturas, los totales en MXN y USD, y cuántas esperan a cada nivel.

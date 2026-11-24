@@ -172,18 +172,59 @@ define([
   };
 
   /**
-   * Notices that follow an approve or discard: confirmation to the approver, next approvers
-   * and treasury.
-   * @param {{ lineId: string, outcome: string, nextLevelId?: string|null }[]} results
-   * @param {string} employeeId Who acted.
+   * Tells the AP channel which bills were discarded, by whom and why.
+   * @param {string[]} lineIds Lines just discarded.
+   * @param {string} employeeName
+   * @param {string} reason
+   * @returns {boolean} Whether the notice was posted.
    */
-  const notifyAfterAction = (results, employeeId) => {
+  const notifyDiscarded = (lineIds, employeeName, reason) => {
+    if (!lineIds.length) return false;
+    try {
+      const { apChannel } = configLib.getConfig();
+      if (!apChannel) {
+        log.audit(TITLE, 'Falta el Canal de Slack de CXP; no se avisó del descarte.');
+        return false;
+      }
+      const text = messages.buildDiscardNotice({
+        lines: pendingLines.findByIds(lineIds.map(String)),
+        employeeName,
+        reason,
+      });
+      if (!text) return false;
+      slackClient.postMessage(apChannel, text);
+      return true;
+    } catch (e) {
+      log.error(TITLE, `Aviso de descarte a CXP: ${/** @type {Error} */ (e).message}`);
+      return false;
+    }
+  };
+
+  /**
+   * Notices that follow an approve or discard: confirmation to the approver, next approvers,
+   * treasury and, for discards, the AP channel.
+   * @param {{ lineId: string, outcome: string, nextLevelId?: string|null }[]} results
+   * @param {{ employeeId: string, employeeName: string, reason?: string }} actor
+   */
+  const notifyAfterAction = (results, { employeeId, employeeName, reason = '' }) => {
     notifyApprover(employeeId, results);
     notifyLevels(
       results.filter((r) => r.outcome === Outcome.ADVANCED).map((r) => String(r.nextLevelId || '')),
     );
     notifyTreasury(results.filter((r) => r.outcome === Outcome.AUTHORIZED).map((r) => r.lineId));
+    notifyDiscarded(
+      results.filter((r) => r.outcome === Outcome.DISCARDED).map((r) => r.lineId),
+      employeeName,
+      reason,
+    );
   };
 
-  return { notifyLevels, notifyAllApprovers, notifyTreasury, notifyApprover, notifyAfterAction };
+  return {
+    notifyLevels,
+    notifyAllApprovers,
+    notifyTreasury,
+    notifyApprover,
+    notifyDiscarded,
+    notifyAfterAction,
+  };
 });
