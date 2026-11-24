@@ -121,24 +121,102 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - El botón es solo un enlace, pero si la app de Slack tiene **Interactivity** encendida, Slack manda el clic a la Request URL; NetSuite la rechaza (405) y Slack muestra un ⚠️ junto al botón. Mantener Interactivity apagada hasta que exista el Cloudflare Worker.
 - Pendiente: avisar también al suplente; actualizar el DM anterior (`chat.update`) en lugar de mandar uno nuevo.
 
-## 5. Configuración inicial
+## 5. Puesta en marcha (sandbox o PROD)
 
-1. Desplegar el proyecto SDF.
-2. Capturar API Secrets: bot token y Signing Secret de Slack.
-3. Crear la búsqueda de pendientes (no viaja con SDF) e incluir como columnas las 4 casillas de aprobación, moneda e importe. No debe filtrar por las casillas.
-4. Llenar el registro de Configuración (búsqueda y canales).
-5. Crear los 4 registros de nivel:
+Guía para instalar la app en una cuenta nueva. Seguir los pasos en orden: varios dependen del anterior. Lo marcado **(a confirmar)** no se ha probado con un rol distinto de Administrador.
 
-| Nombre | Orden | Campo de aprobación |
-|---|---|---|
-| Director | 1 | `custbody_gpv_dir_approval` |
-| CFO | 2 | `custbody_gpv_cfo_approval` |
-| CEO 1 | 3 | `custbody_gpv_ceo1_approval` |
-| CEO 2 | 4 | `custbody_gpv_ceo2_approval` |
+### 5.1 Antes de empezar
 
-6. Capturar el ID de Slack en el registro de empleado de cada aprobador.
-7. Invitar al bot de Slack al canal de CXP.
-8. Programar el deployment del lunes (`customdeploy_gpv_weekly_proposal_ss`: ya trae la recurrencia semanal del lunes, pero se despliega como No programado) y el del sábado (`customdeploy_gpv_weekly_expiry_ss`, también No programado con la recurrencia del sábado).
+- [ ] Workspace de Slack del cliente y una persona con permiso para instalar apps en él.
+- [ ] Canales creados: uno de **Tesorería** y uno de **CXP**.
+- [ ] Usuarios de NetSuite para los 4 aprobadores (Director, CFO, CO-CEO 1, CO-CEO 2) y para Tesorería.
+- [ ] Definida con CXP la búsqueda guardada de facturas pendientes (qué facturas entran y qué columnas lleva el CSV).
+- [ ] Acceso a la cuenta de NetSuite con rol Administrador y la extensión SuiteCloud de VS Code configurada para esa cuenta.
+
+### 5.2 Slack app
+
+1. En api.slack.com/apps: **Create New App → From scratch**, en el workspace del cliente.
+2. **Basic Information → Display Information:**
+   - Nombre: "Asistente NetSuite" (o el que elija el cliente).
+   - Descripción corta: *Avisa a los aprobadores las facturas por autorizar y a Tesorería las listas para pago, con enlace a NetSuite.*
+3. **OAuth & Permissions → Bot Token Scopes:** `chat:write`. Es lo único que usa la app hoy.
+4. **Socket Mode: apagado. Interactivity: apagada.** Si Interactivity queda encendida, Slack muestra un ⚠️ en los botones (ver 4.6).
+5. **Install to Workspace.** Copiar el **Bot User OAuth Token** (`xoxb-…`) y, en Basic Information, el **Signing Secret**. No pegarlos en ningún documento ni chat: van directo a NetSuite (5.4).
+6. Obtener el **ID de cada canal**: abrir el canal → nombre del canal → al final de la pestaña "Acerca de" aparece el ID (`C0…`).
+
+### 5.3 Desplegar el proyecto SDF
+
+1. En VS Code, con la cuenta destino seleccionada: **SuiteCloud: Validate Project** (con servidor) y luego **SuiteCloud: Deploy Project**.
+2. Se crean: listas, registros personalizados, campos de factura, proveedor y empleado, scripts con sus deployments y los archivos del File Cabinet.
+3. Los deployments del lunes y del sábado llegan como **No programado**; se activan al final (5.9).
+4. **Gateway de Slack** (`customscript_gpv_slack_gateway_sl`): hoy no se usa (Slack no llega directo a NetSuite, ver 4.3) y ejecuta como Administrador. **Recomendación para PROD:** dejar su deployment sin desplegar hasta que exista el Worker y el rol mínimo. **(decisión pendiente)**
+5. **Prueba de humo** (`customscript_gpv_slack_smoke_test_ss`): útil para el paso 5.8; después se puede dejar sin programar.
+
+### 5.4 API Secrets
+
+En **Configuración > Empresa > API Secrets**, crear:
+
+| ID | Valor |
+|---|---|
+| `custsecret_gpv_slack_bot_token` | Bot User OAuth Token (`xoxb-…`) |
+| `custsecret_gpv_slack_signing_secret` | Signing Secret |
+
+Permitir su uso a los scripts de la app (o a todos los scripts). Los avisos de Slack salen tanto de los scripts programados como del Centro de Autorización.
+
+### 5.5 Búsqueda de pendientes
+
+La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
+
+1. Búsqueda guardada de **Transacción**, tipo **Factura de proveedor**, con los criterios de CXP (aceptadas, listas para pago, etc.).
+2. **No** filtrar por las casillas de aprobación ni por el estado de autorización: la app agrega sus propios filtros (ver 4.1).
+3. Columnas: las que CXP quiera ver en el CSV. Recomendado agregar las 4 casillas de aprobación, moneda e importe.
+4. Anotar su ID (en el sandbox: `customsearch_gpv_slack_pending_bills`).
+
+### 5.6 Configuración y niveles
+
+1. **Configuración GPV** (`customrecord_gpv_config`): crear **un solo** registro con:
+   - Búsqueda de pendientes: la del paso 5.5.
+   - Canal de Slack de Tesorería y Canal de Slack de CXP: los IDs del paso 5.2.
+   - Motivo obligatorio al descartar: según decida el cliente (recomendado: sí).
+2. **Niveles de aprobación** (`customrecord_gpv_approval_level`): un registro por nivel.
+
+| Nombre | Orden | Campo de aprobación | Aprobador |
+|---|---|---|---|
+| Director | 1 | `custbody_gpv_dir_approval` | Director |
+| CFO | 2 | `custbody_gpv_cfo_approval` | CFO |
+| CEO 1 | 3 | `custbody_gpv_ceo1_approval` | CO-CEO 1 (casilla "CO - CEO - BB") |
+| CEO 2 | 4 | `custbody_gpv_ceo2_approval` | CO-CEO 2 (casilla "CO - CEO - ECOVALLAS") |
+
+   - El **Suplente** es opcional; puede aprobar en lugar del aprobador (aún no recibe DMs).
+   - El nivel con **Orden 1** conserva su aprobación siempre (ver 3, Reglas).
+
+### 5.7 Empleados, proveedores y permisos
+
+1. **Usuario de Slack** en el registro de empleado de cada aprobador: en Slack, abrir su perfil → ⋮ → **Copiar ID de miembro** (`U0…`). Sin este dato no recibe DMs (se registra en el log).
+2. **Prioridad de Proveedor** (opcional): capturar Alto, Medio o Bajo en los proveedores que CXP quiera ordenar primero.
+3. **Permisos de los roles** de aprobadores y Tesorería **(a confirmar)**. El Centro ejecuta con el rol del usuario y los registros de la app exigen permiso por registro, así que el rol necesita al menos:
+   - Factura de proveedor: **Editar** (aprobadores; la app marca las casillas y el estado).
+   - Proveedor y Empleado: **Ver**.
+   - Registros personalizados: Concentrado, Nivel de aprobación y Configuración GPV **Ver**; Línea de concentrado **Editar**; Bitácora **Crear**.
+   - Alternativa si no se quiere tocar los roles: que el deployment del Centro ejecute con un rol dedicado.
+4. El deployment del Centro está publicado para todos los roles y empleados; Tesorería entra a su vista con el botón del aviso (`?view=authorized`).
+
+### 5.8 Pruebas de humo
+
+1. Invitar al bot (`/invite @<nombre de la app>`) a los canales de **Tesorería** y **CXP**.
+2. Ejecutar la prueba de humo: debe llegar "Hola desde NetSuite" al canal de Tesorería.
+3. Ejecutar a mano el concentrado semanal (deployment del lunes → **Guardar y ejecutar**) y revisar:
+   - Resumen en el canal de CXP y CSV en `SuiteScripts/gpv_payment_authorization/proposals/`.
+   - DM a cada aprobador con pendientes; en el log, `DMs a aprobadores: N`.
+4. Con el usuario de cada aprobador: abrir el Centro desde el DM, aprobar una factura y confirmar el DM de confirmación, el DM al siguiente nivel y, al final, el aviso a Tesorería. Descartar una y confirmar el aviso a CXP.
+
+### 5.9 Programar y cerrar
+
+1. Deployment del lunes (`customdeploy_gpv_weekly_proposal_ss`): estado **Programado**, día y hora de la junta (ya trae la recurrencia semanal del lunes).
+2. Deployment del sábado (`customdeploy_gpv_weekly_expiry_ss`): estado **Programado** (ya trae la recurrencia del sábado).
+3. Bajar el nivel de log de los deployments de **Depuración** a **Auditoría** para no llenar el log.
+4. Dejar sin programar la prueba de humo.
+5. Avisar a los aprobadores y a Tesorería; compartirles el manual de usuario.
 
 ## 6. Desarrollo
 
@@ -157,6 +235,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | 23 nov 2026 | El Director es el nivel 1, con un aprobador general (no por área) |
 | 23 nov 2026 | Slack no puede llamar directo a NetSuite (405 por User-Agent). Vía principal: DM con enlace al Centro de Autorización interno; botones nativos después, con un Cloudflare Worker |
 | 24 nov 2026 | La aprobación del Director (nivel 1, fijo en código) es permanente: no se limpia al descartar, vencer ni por huecos |
+| 24 nov 2026 | No se agrega descarga del CSV del concentrado en el Centro ni en Slack: se queda como propuesta para que la operación se haga en NetSuite y no regrese a Excel |
 
 ## 8. Pendientes y riesgos
 
@@ -164,5 +243,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - "Expediente completo" (XML, PDF, Constancia) como filtro de entrada: por definir.
 - Director por área: por ahora un solo aprobador.
 - La búsqueda de pendientes definitiva aún no existe (la del sandbox es de prueba).
-- El gateway ejecuta como Administrador: crear un rol mínimo antes de PROD.
+- El gateway ejecuta como Administrador: crear un rol mínimo antes de PROD, o no desplegarlo hasta tener el Worker (ver 5.3).
+- Permisos mínimos de los roles de aprobadores y Tesorería para el Centro: por confirmar (ver 5.7).
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
+- Propuesta (no aprobada): botón "Descargar CSV" del concentrado en el Centro y en el resumen de CXP, con una ruta `?action=csv&proposal=N` del Suitelet que sirve el archivo ya ligado al concentrado. Se pospuso para no fomentar volver a Excel.
