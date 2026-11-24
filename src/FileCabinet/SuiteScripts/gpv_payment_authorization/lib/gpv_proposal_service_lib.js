@@ -166,7 +166,7 @@ define([
 
   /** @param {string} proposalId */
   const getLines = (proposalId) => {
-    /** @type {{ billId: string, amount: number, currencyId: string, statusId: string, levelId: string }[]} */
+    /** @type {{ id: string, billId: string, amount: number, currencyId: string, statusId: string, levelId: string }[]} */
     const lines = [];
     search
       .create({
@@ -183,6 +183,7 @@ define([
       .run()
       .each((result) => {
         lines.push({
+          id: String(result.id),
           billId: String(result.getValue(ProposalLine.VENDOR_BILL)),
           amount: Number(result.getValue(ProposalLine.AMOUNT)) || 0,
           currencyId: String(result.getValue(ProposalLine.CURRENCY)),
@@ -274,11 +275,14 @@ define([
       billCount: lines.length,
       totals,
       pendingByLevel: levels.map((level) => ({
+        levelId: level.id,
         name: level.name,
         count: lines.filter((line) => line.statusId === pendingId && line.levelId === level.id)
           .length,
       })),
       authorizedCount: lines.filter((line) => line.statusId === authorizedId).length,
+      /** Lines born authorized (every box already checked), for the treasury notice. */
+      authorizedLineIds: lines.filter((line) => line.statusId === authorizedId).map((l) => l.id),
     };
   };
 
@@ -316,7 +320,13 @@ define([
       return {
         done,
         proposalId,
-        summary: { billCount: 0, totals: {}, pendingByLevel: [], authorizedCount: 0 },
+        summary: {
+          billCount: 0,
+          totals: {},
+          pendingByLevel: [],
+          authorizedCount: 0,
+          authorizedLineIds: [],
+        },
       };
     }
     return { done, proposalId, summary: finalize(proposalId, searchId, levels, meetingDate) };

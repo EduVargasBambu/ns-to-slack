@@ -471,6 +471,23 @@
       dialog .actions {
         justify-content: flex-end;
       }
+
+      /* Treasury view (?view=authorized): read-only, no checkboxes or action bar */
+      body.readonly {
+        padding-bottom: 32px;
+      }
+      body.readonly tbody tr {
+        cursor: default;
+      }
+      @media (max-width: 640px) {
+        body.readonly tbody tr {
+          grid-template-columns: 1fr auto;
+          grid-template-areas:
+            'vendor vendor'
+            'bill amount'
+            'due due';
+        }
+      }
     </style>
   </head>
   <body>
@@ -517,6 +534,8 @@
         /** lineId -> line, for the selected totals. */
         let linesById = new Map();
         let busy = false;
+        /** Treasury view: authorized bills still to pay, read-only. */
+        const readOnly = new URLSearchParams(window.location.search).get('view') === 'authorized';
 
         const url = (action) => {
           const u = new URL(window.location.href);
@@ -589,20 +608,13 @@
         };
 
         const renderLine = (line) => {
-          const box = el('input', {
-            type: 'checkbox',
-            'data-line': line.lineId,
-            'aria-label': `Seleccionar ${line.vendor || 'factura'} ${line.billNumber || ''}`,
-          });
-          box.addEventListener('change', refreshFooter);
           const billLink = el('a', {
             href: `/app/accounting/transactions/vendbill.nl?id=${encodeURIComponent(line.billId)}`,
             target: '_blank',
             rel: 'noopener',
             text: line.billNumber || 'Ver factura',
           });
-          const row = el('tr', {}, [
-            el('td', { class: 'col-check' }, [box]),
+          const cells = [
             el('td', { class: 'vendor', text: line.vendor || 'Proveedor' }),
             el('td', { class: 'bill' }, [billLink]),
             el('td', { class: 'due', text: line.dueDate || '—' }),
@@ -612,7 +624,16 @@
                 document.createTextNode(`$${money.format(line.amount)}`),
               ]),
             ]),
-          ]);
+          ];
+          if (readOnly) return el('tr', {}, cells);
+
+          const box = el('input', {
+            type: 'checkbox',
+            'data-line': line.lineId,
+            'aria-label': `Seleccionar ${line.vendor || 'factura'} ${line.billNumber || ''}`,
+          });
+          box.addEventListener('change', refreshFooter);
+          const row = el('tr', {}, [el('td', { class: 'col-check' }, [box]), ...cells]);
           // Clicking anywhere on the row toggles it; links and the box keep their own click.
           row.addEventListener('click', (e) => {
             if (e.target.closest('a, input')) return;
@@ -623,7 +644,9 @@
         };
 
         const renderGroup = (group) => {
-          const label = `concentrado del ${group.meetingDate}, ${group.levelName}`;
+          const label = readOnly
+            ? `concentrado del ${group.meetingDate}`
+            : `concentrado del ${group.meetingDate}, ${group.levelName}`;
           const allBoxes = [
             el('input', { type: 'checkbox', 'aria-label': `Seleccionar todas: ${label}` }),
             el('input', { type: 'checkbox', id: `all-${group.proposalId}-${group.levelId}` }),
@@ -645,7 +668,9 @@
           const head = el('div', { class: 'group-head' }, [
             el('div', { class: 'group-title' }, [
               el('h2', { text: `Concentrado del ${group.meetingDate}` }),
-              el('span', { class: 'level', text: `Nivel: ${group.levelName}` }),
+              ...(readOnly
+                ? []
+                : [el('span', { class: 'level', text: `Nivel: ${group.levelName}` })]),
             ]),
             el('div', { class: 'group-stats' }, [
               el('span', {}, [
@@ -669,7 +694,9 @@
           const table = el('table', {}, [
             el('thead', {}, [
               el('tr', {}, [
-                el('th', { class: 'col-check', scope: 'col' }, [allBoxes[0]]),
+                ...(readOnly
+                  ? []
+                  : [el('th', { class: 'col-check', scope: 'col' }, [allBoxes[0]])]),
                 el('th', { scope: 'col', text: 'Proveedor' }),
                 el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
                 el('th', { class: 'col-due', scope: 'col', text: 'Vence' }),
@@ -678,11 +705,17 @@
             ]),
             el('tbody', {}, rows),
           ]);
-          return el('section', { class: 'group', 'aria-label': label }, [head, mobileAll, table]);
+          return el(
+            'section',
+            { class: 'group', 'aria-label': label },
+            readOnly ? [head, table] : [head, mobileAll, table],
+          );
         };
 
         const load = async () => {
-          const res = await fetch(url('pending'), { credentials: 'same-origin' });
+          const res = await fetch(url(readOnly ? 'authorized' : 'pending'), {
+            credentials: 'same-origin',
+          });
           const data = await res.json();
           if (!data.ok) throw new Error(data.error || 'No se pudieron cargar las facturas.');
           $('who').textContent = data.userName;
@@ -694,10 +727,12 @@
               ? data.groups.map(renderGroup)
               : [
                   el('section', { class: 'group empty' }, [
-                    el('strong', { text: 'Estás al día' }),
+                    el('strong', { text: readOnly ? 'Nada por pagar' : 'Estás al día' }),
                     el('span', {
                       class: 'muted',
-                      text: 'No tienes facturas esperando tu autorización.',
+                      text: readOnly
+                        ? 'No hay facturas autorizadas pendientes de pago.'
+                        : 'No tienes facturas esperando tu autorización.',
                     }),
                   ]),
                 ]),
@@ -763,6 +798,12 @@
           if (dialog.returnValue === 'confirm') send('discard', $('reason').value);
         });
 
+        if (readOnly) {
+          document.body.classList.add('readonly');
+          document.title = 'Facturas autorizadas';
+          document.querySelector('h1').textContent = 'Facturas autorizadas por pagar';
+          document.querySelector('footer.bar').hidden = true;
+        }
         renderSkeleton();
         load().catch((e) => {
           $('groups').replaceChildren();

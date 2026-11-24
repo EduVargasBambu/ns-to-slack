@@ -38,7 +38,13 @@ Se ve en la factura, en el campo **Estado de autorización de pago**.
 
 ## 5. Para los aprobadores
 
-### Aprobar desde Slack **(pendiente)**
+### El aviso en Slack
+
+Cuando tienes facturas esperando tu aprobación, te llega un mensaje directo de la app en Slack: cuántas son, de qué concentrado y por cuánto. El botón **Ver en NetSuite** abre el Centro de Autorización. Te llega el lunes con el concentrado y cada vez que el nivel anterior te pasa facturas nuevas.
+
+Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de empleado en NetSuite (lo hace el administrador).
+
+### Aprobar con botones dentro de Slack **(pendiente)**
 
 ### Aprobar o descartar desde NetSuite (Centro de Autorización)
 
@@ -59,7 +65,11 @@ En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al con
 - **El archivo del concentrado** (CSV, se abre en Excel) queda adjunto al registro del concentrado en NetSuite, con las mismas columnas de la búsqueda de pendientes.
 - **Si hace falta generarlo a mano**, se puede ejecutar el script desde NetSuite. Si ya existe el concentrado de ese día, no se crea otro: se completa el mismo.
 
-## 7. Para Tesorería **(pendiente)**
+## 7. Para Tesorería
+
+Cuando una factura recibe la última aprobación, llega un aviso al canal de Tesorería en Slack con cuántas facturas se autorizaron y el total por moneda. Ese aviso sustituye al correo y al "paguen" informal.
+
+El botón **Ver autorizadas** abre en NetSuite la lista de todas las facturas autorizadas que aún no se pagan, agrupadas por concentrado, con enlace a cada factura. Es solo de consulta. Cuando una factura se paga completa, desaparece de la lista; si tiene un pago parcial, sigue apareciendo.
 
 ## 8. Preguntas frecuentes
 

@@ -14,6 +14,7 @@ define([
   '../lib/gpv_pending_lines_lib',
   '../lib/gpv_approval_service_lib',
   '../lib/gpv_audit_log_lib',
+  '../slack/gpv_notifier_lib',
 ], (
   /** @type {typeof import('N/runtime')} */ runtime,
   /** @type {typeof import('N/file')} */ file,
@@ -22,10 +23,11 @@ define([
   pendingLines,
   approvalService,
   auditLog,
+  notifier,
 ) => {
   const TITLE = 'gpv_approval_center_sl';
-  /** Units kept to answer after the last line. */
-  const RESERVED_USAGE = 100;
+  /** Units kept after the last line for the Slack notices and the answer. */
+  const RESERVED_USAGE = 250;
   const MAX_LINES = 500;
   /** Header the page sends: a cross-site form cannot set it, so it blocks CSRF. */
   const REQUEST_HEADER = 'X-GPV-Request';
@@ -98,6 +100,15 @@ define([
       });
       return;
     }
+    // Read-only treasury view: anyone with access to the Center may see it.
+    if (request.method === 'GET' && action === 'authorized') {
+      sendJson(response, {
+        ok: true,
+        userName: user.name,
+        groups: pendingLines.findAuthorized(),
+      });
+      return;
+    }
     if (request.method !== 'POST' || !['approve', 'discard'].includes(action)) {
       sendJson(response, { ok: false, error: 'Acción no válida.' });
       return;
@@ -121,6 +132,8 @@ define([
         action === 'approve'
           ? approvalService.approve(options)
           : approvalService.discard({ ...options, reason });
+      // Notices never fail the request: the approval is already saved.
+      notifier.notifyAfterAction(results);
       sendJson(response, { ok: true, counts: countOutcomes(results) });
     } catch (e) {
       const err = /** @type {{ name?: string, message?: string }} */ (e);

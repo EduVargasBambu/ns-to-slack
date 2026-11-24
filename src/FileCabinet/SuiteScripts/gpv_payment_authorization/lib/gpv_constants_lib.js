@@ -70,6 +70,17 @@ define([], () => {
   /** File Cabinet folder for the proposal CSV files; resolved through a placeholder file. */
   const PROPOSAL_FOLDER_MARKER = '/SuiteScripts/gpv_payment_authorization/proposals/README.txt';
 
+  const Employee = {
+    /** Slack member id (U...) of the employee, for direct messages. */
+    SLACK_USER: 'custentity_gpv_slack_user',
+  };
+
+  /** Approval Center Suitelet, the target of "Ver en NetSuite". */
+  const ApprovalCenter = {
+    SCRIPT: 'customscript_gpv_approval_center_sl',
+    DEPLOYMENT: 'customdeploy_gpv_approval_center_sl',
+  };
+
   /** Page of the Approval Center, served by gpv_approval_center_sl. */
   const APPROVAL_CENTER_PAGE =
     '/SuiteScripts/gpv_payment_authorization/ui/gpv_approval_center.html';
@@ -117,6 +128,8 @@ define([], () => {
     VendorBill,
     PROPOSAL_FOLDER_MARKER,
     APPROVAL_CENTER_PAGE,
+    Employee,
+    ApprovalCenter,
     ProposalStatusList,
     LineStatusList,
     ActionList,

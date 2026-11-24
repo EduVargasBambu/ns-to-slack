@@ -69,15 +69,11 @@ define([
   };
 
   /**
-   * @param {string} employeeId
-   * @returns {ReturnType<typeof groupLines>}
+   * Proposal lines with what a person needs to recognize the bill.
+   * @param {any[]} filters Filter expression on the proposal line.
+   * @returns {PendingLine[]} Ordered by due date.
    */
-  const findForEmployee = (employeeId) => {
-    /** @type {GpvLevel[]} */
-    const levels = levelLib.getLevels();
-    const mine = levels.filter((l) => [l.approverId, l.substituteId].includes(employeeId));
-    if (!employeeId || !mine.length) return [];
-
+  const searchLines = (filters) => {
     const codes = currencyLib.getCurrencyCodes();
     const meetingDate = search.createColumn({
       name: Proposal.MEETING_DATE,
@@ -90,13 +86,7 @@ define([
       .create({
         type: ProposalLine.RECORD,
         filters: [
-          [
-            ProposalLine.STATUS,
-            'anyof',
-            listLib.getValueId(LineStatusList.ID, LineStatusList.PENDING),
-          ],
-          'AND',
-          [ProposalLine.LEVEL, 'anyof', mine.map((l) => l.id)],
+          ...filters,
           'AND',
           // The bill join returns one row per transaction line; keep only the main line.
           [`${ProposalLine.VENDOR_BILL}.mainline`, 'is', 'T'],
@@ -119,7 +109,7 @@ define([
           lineId: String(result.id),
           proposalId: String(result.getValue(ProposalLine.PROPOSAL)),
           meetingDate: String(result.getValue(meetingDate) || ''),
-          levelId: String(result.getValue(ProposalLine.LEVEL)),
+          levelId: String(result.getValue(ProposalLine.LEVEL) || ''),
           billId: String(result.getValue(ProposalLine.VENDOR_BILL)),
           billNumber: String(result.getValue(billNumber) || ''),
           vendor: String(result.getText(ProposalLine.VENDOR) || ''),
@@ -129,8 +119,79 @@ define([
         });
         return true;
       });
-    return groupLines(lines, levels);
+    return lines;
   };
 
-  return { groupLines, findForEmployee };
+  /**
+   * @param {string[]} lineIds
+   * @returns {PendingLine[]}
+   */
+  const findByIds = (lineIds) =>
+    lineIds.length ? searchLines([['internalid', 'anyof', lineIds]]) : [];
+
+  /**
+   * @param {string} employeeId
+   * @returns {ReturnType<typeof groupLines>}
+   */
+  const findForEmployee = (employeeId) => {
+    /** @type {GpvLevel[]} */
+    const levels = levelLib.getLevels();
+    const mine = levels.filter((l) => [l.approverId, l.substituteId].includes(employeeId));
+    if (!employeeId || !mine.length) return [];
+
+    return groupLines(
+      searchLines([
+        [
+          ProposalLine.STATUS,
+          'anyof',
+          listLib.getValueId(LineStatusList.ID, LineStatusList.PENDING),
+        ],
+        'AND',
+        [ProposalLine.LEVEL, 'anyof', mine.map((l) => l.id)],
+      ]),
+      levels,
+    );
+  };
+
+  /**
+   * One group per proposal, oldest meeting first, for the treasury view.
+   * @param {PendingLine[]} lines
+   */
+  const groupByProposal = (lines) => {
+    /** @type {Map<string, { proposalId: string, meetingDate: string, lines: PendingLine[] }>} */
+    const groups = new Map();
+    lines.forEach((line) => {
+      if (!groups.has(line.proposalId)) {
+        groups.set(line.proposalId, {
+          proposalId: line.proposalId,
+          meetingDate: line.meetingDate,
+          lines: [],
+        });
+      }
+      groups.get(line.proposalId)?.lines.push(line);
+    });
+    return [...groups.values()]
+      .sort((a, b) => Number(a.proposalId) - Number(b.proposalId))
+      .map((group) => ({ ...group, totals: proposalLib.sumByCurrency(group.lines) }));
+  };
+
+  /**
+   * Authorized lines whose bill is still open (not paid in full), for treasury.
+   * @returns {ReturnType<typeof groupByProposal>}
+   */
+  const findAuthorized = () =>
+    groupByProposal(
+      searchLines([
+        [
+          ProposalLine.STATUS,
+          'anyof',
+          listLib.getValueId(LineStatusList.ID, LineStatusList.AUTHORIZED),
+        ],
+        'AND',
+        // VendBill:A = Open; a partial payment keeps it open, paid in full drops it.
+        [`${ProposalLine.VENDOR_BILL}.status`, 'anyof', 'VendBill:A'],
+      ]),
+    );
+
+  return { groupLines, groupByProposal, findForEmployee, findByIds, findAuthorized };
 });

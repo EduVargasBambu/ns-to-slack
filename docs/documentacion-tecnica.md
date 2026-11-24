@@ -103,7 +103,17 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - CSRF: los POST exigen JSON y el encabezado `X-GPV-Request: 1`. XSS: la página pinta todo con `textContent`.
 - Errores: solo `GPV_INVALID_REQUEST` y `GPV_DISCARD_REASON_REQUIRED` se muestran tal cual; lo demás se registra en el log y el usuario ve un mensaje genérico.
 - Lotes: ~25-30 líneas por clic; el resto vuelve como "faltan N, da clic otra vez" (`NOT_PROCESSED`).
+- **Vista de Tesorería** (`?view=authorized`): la misma página en solo lectura, sin casillas ni botones. Llama a `GET ?action=authorized` (`findAuthorized`): líneas Autorizadas cuya factura sigue abierta (`VendBill:A`; con pago parcial sigue abierta, pagada completa sale sola), agrupadas por concentrado, con enlace a cada factura. Cualquiera con acceso al Centro puede abrirla (decidido 24 nov).
 - Página v1 en HTML + JS sin framework. Si crece, se puede cambiar por la SPA (Preact) sin tocar el API.
+
+### 4.6 Avisos en Slack
+
+- **DM al aprobador** (`gpv_notifier_lib.notifyLevels`): el lunes, a los aprobadores de los niveles con facturas; y desde el Centro, al aprobador del siguiente nivel cuando unas líneas avanzan. El DM resume todo lo que esa persona tiene pendiente (la misma búsqueda del Centro) y trae el botón "Ver en NetSuite" al Centro. Un DM por persona aunque tenga varios niveles.
+- **Aviso a Tesorería** (`notifyTreasury`): cuando líneas quedan Autorizadas (en el Centro o al nacer autorizadas el lunes). Mensaje corto: cuántas facturas se autorizaron, total por moneda y botón "Ver autorizadas" a la vista de Tesorería del Centro, donde está el detalle.
+- Requisitos: el **Usuario de Slack** (`custentity_gpv_slack_user`) capturado en el empleado; si falta, se registra en el log y no se le avisa. La app de Slack necesita `chat:write`.
+- Un aviso que falla se registra en el log y **nunca** deshace ni bloquea la aprobación. Los textos de NetSuite se escapan para que no generen menciones ni enlaces en Slack.
+- El botón es solo un enlace, pero si la app de Slack tiene **Interactivity** encendida, Slack manda el clic a la Request URL; NetSuite la rechaza (405) y Slack muestra un ⚠️ junto al botón. Mantener Interactivity apagada hasta que exista el Cloudflare Worker.
+- Pendiente: avisar también al suplente; actualizar el DM anterior (`chat.update`) en lugar de mandar uno nuevo.
 
 ## 5. Configuración inicial
 

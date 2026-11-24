@@ -14,6 +14,7 @@ define([
   '../lib/gpv_proposal_service_lib',
   '../slack/gpv_slack_client_lib',
   '../slack/gpv_proposal_message_lib',
+  '../slack/gpv_notifier_lib',
 ], (
   /** @type {typeof import('N/runtime')} */ runtime,
   /** @type {typeof import('N/task')} */ task,
@@ -23,6 +24,7 @@ define([
   proposalService,
   slackClient,
   proposalMessage,
+  notifier,
 ) => {
   const TITLE = 'gpv_weekly_proposal_ss';
   /** Units kept for the final step (totals, CSV, Slack) after the last bill. */
@@ -67,6 +69,13 @@ define([
       ...result.summary,
     });
     const posted = slackClient.postMessage(apChannel, text);
+    const dms = notifier.notifyLevels(
+      result.summary.pendingByLevel
+        .filter((/** @type {{ count: number }} */ l) => l.count > 0)
+        .map((/** @type {{ levelId: string }} */ l) => l.levelId),
+    );
+    notifier.notifyTreasury(result.summary.authorizedLineIds);
+    log.audit(TITLE, `DMs a aprobadores: ${dms}.`);
     log.audit(
       TITLE,
       `Concentrado ${result.proposalId}: ${result.summary.billCount} facturas. Slack ts=${posted.ts}`,

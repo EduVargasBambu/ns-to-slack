@@ -5,7 +5,7 @@ jest.mock('N/error', () => ({
   create: ({ name, message }) => Object.assign(new Error(message), { name }),
 }));
 
-const { groupLines } = pending;
+const { groupLines, groupByProposal } = pending;
 
 const LEVELS = [
   { id: '11', name: 'Director', order: 1, approvalField: 'a', approverId: '100', substituteId: '' },
@@ -55,5 +55,20 @@ describe('groupLines', () => {
 
   it('skips lines whose level is not configured', () => {
     expect(groupLines([line('1', '10', '99', 1, 'MXN')], LEVELS)).toEqual([]);
+  });
+});
+
+describe('groupByProposal', () => {
+  it('groups by proposal only, oldest first, with totals', () => {
+    const groups = groupByProposal([
+      line('1', '20', '14', 100, 'MXN'),
+      line('2', '10', '', 50.5, 'USD'),
+      line('3', '20', '13', 0.25, 'MXN'),
+    ]);
+    expect(groups.map((g) => [g.proposalId, g.lines.map((l) => l.lineId), g.totals])).toEqual([
+      ['10', ['2'], { USD: 50.5 }],
+      ['20', ['1', '3'], { MXN: 100.25 }],
+    ]);
+    expect(groups[0].meetingDate).toBe('fecha 10');
   });
 });
