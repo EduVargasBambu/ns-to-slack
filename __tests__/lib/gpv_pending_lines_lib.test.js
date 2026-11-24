@@ -23,6 +23,7 @@ const line = (lineId, proposalId, levelId, amount, currency) => ({
   currency,
   dueDate: '30/11/2026',
   priorityRank: 3,
+  priority: '',
 });
 
 describe('groupLines', () => {

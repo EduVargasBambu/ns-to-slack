@@ -36,6 +36,7 @@ define([
    * @property {string} currency ISO code.
    * @property {string} dueDate
    * @property {number} priorityRank 0 = Alto, 1 = Medio, 2 = Bajo, 3 = no priority.
+   * @property {string} priority Vendor priority as the list shows it; '' when none.
    */
 
   /**
@@ -154,6 +155,7 @@ define([
           currency: codes[String(result.getValue(ProposalLine.CURRENCY))] || '',
           dueDate: String(result.getValue(ProposalLine.DUE_DATE) || ''),
           priorityRank: ranks[String(result.getValue(priority))] ?? NO_PRIORITY,
+          priority: String(result.getText(priority) || ''),
         });
         return true;
       });

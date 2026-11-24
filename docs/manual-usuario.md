@@ -50,7 +50,9 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
 
 1. Abre el **Centro de Autorización** (desde el botón "Ver en NetSuite" del mensaje de Slack, o desde NetSuite). Funciona en el celular.
 2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado, con totales en MXN y USD. El número de factura abre la factura con sus adjuntos.
-   - **Orden:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad. Dentro de cada prioridad, primero las facturas en dólares y luego en pesos, de la más grande a la más chica.
+   - **Por moneda:** cada concentrado muestra primero la tabla de **Dólares (USD)** y luego la de **Pesos (MXN)**, cada una con su número de facturas y su total.
+   - **Orden dentro de cada tabla:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad; dentro de cada prioridad, de la factura más grande a la más chica. La prioridad aparece como etiqueta junto al nombre del proveedor.
+   - La casilla del encabezado de cada tabla selecciona todas las de esa moneda. En el celular, "Seleccionar todas" marca las del concentrado completo.
 3. Marca las facturas (o "seleccionar todas" del grupo). Abajo verás cuántas y por cuánto.
 4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada. Te llega un mensaje en Slack confirmando cuántas aprobaste, por cuánto y a quién pasaron.
 5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez desde el Director.

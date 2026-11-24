@@ -195,6 +195,46 @@
         text-align: right;
         padding-right: 16px;
       }
+      .priority {
+        display: inline-block;
+        margin-left: 8px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+        vertical-align: 1px;
+      }
+      .priority-0 {
+        color: #8a1c14;
+        background: #fdecea;
+      }
+      .priority-1 {
+        color: #7a4b00;
+        background: #fff3dc;
+      }
+      .priority-2 {
+        color: var(--muted);
+        background: #eef0f4;
+      }
+      .currency-head {
+        display: flex;
+        align-items: baseline;
+        gap: 6px 14px;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        color: var(--muted);
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--line);
+      }
+      table + .currency-head {
+        border-top: 1px solid var(--line);
+      }
+      .currency-head strong {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
       .vendor {
         font-weight: 600;
         overflow-wrap: break-word;
@@ -537,6 +577,14 @@
         /** Treasury view: authorized bills still to pay, read-only. */
         const readOnly = new URLSearchParams(window.location.search).get('view') === 'authorized';
 
+        /** Same currency order as the server: USD, MXN, then any other alphabetically. */
+        const CURRENCY_ORDER = ['USD', 'MXN'];
+        const CURRENCY_NAMES = { USD: 'Dólares', MXN: 'Pesos' };
+        const byCurrency = (a, b) => {
+          const rank = (c) => (CURRENCY_ORDER.includes(c) ? CURRENCY_ORDER.indexOf(c) : 99);
+          return rank(a) - rank(b) || a.localeCompare(b);
+        };
+
         const url = (action) => {
           const u = new URL(window.location.href);
           u.searchParams.set('action', action);
@@ -615,7 +663,18 @@
             text: line.billNumber || 'Ver factura',
           });
           const cells = [
-            el('td', { class: 'vendor', text: line.vendor || 'Proveedor' }),
+            el('td', { class: 'vendor' }, [
+              document.createTextNode(line.vendor || 'Proveedor'),
+              ...(line.priority
+                ? [
+                    el('span', {
+                      class: `priority priority-${line.priorityRank}`,
+                      title: 'Prioridad del proveedor',
+                      text: line.priority,
+                    }),
+                  ]
+                : []),
+            ]),
             el('td', { class: 'bill' }, [billLink]),
             el('td', { class: 'due', text: line.dueDate || '—' }),
             el('td', { class: 'col-amount' }, [
@@ -647,23 +706,59 @@
           const label = readOnly
             ? `concentrado del ${group.meetingDate}`
             : `concentrado del ${group.meetingDate}, ${group.levelName}`;
-          const allBoxes = [
-            el('input', { type: 'checkbox', 'aria-label': `Seleccionar todas: ${label}` }),
-            el('input', { type: 'checkbox', id: `all-${group.proposalId}-${group.levelId}` }),
-          ];
           const rows = group.lines.map(renderLine);
-          const lineBoxes = () => rows.map((r) => r.querySelector('input'));
-          allBoxes.forEach((all) =>
-            all.addEventListener('change', () => {
-              lineBoxes().forEach((b) => {
-                b.checked = all.checked;
+          const boxesOf = (list) => list.map((r) => r.querySelector('input'));
+          // Phones hide the table headers, so they get one "select all" for the whole group.
+          const mobileBox = el('input', {
+            type: 'checkbox',
+            id: `all-${group.proposalId}-${group.levelId || ''}`,
+          });
+          /** One table per currency; rows keep the server order (priority, then amount). */
+          const currencies = [...new Set(group.lines.map((l) => l.currency))].sort(byCurrency);
+          const headBoxes = [];
+          const sections = currencies.flatMap((code) => {
+            const lines = group.lines.filter((l) => l.currency === code);
+            const tableRows = rows.filter((_, i) => group.lines[i].currency === code);
+            const total = lines.reduce((sum, l) => sum + l.amount, 0);
+            const headBox = el('input', {
+              type: 'checkbox',
+              'aria-label': `Seleccionar todas en ${code}: ${label}`,
+            });
+            headBoxes.push(headBox);
+            headBox.addEventListener('change', () => {
+              boxesOf(tableRows).forEach((b) => {
+                b.checked = headBox.checked;
               });
-              allBoxes.forEach((other) => {
-                other.checked = all.checked;
-              });
+              mobileBox.checked = boxesOf(rows).every((b) => b.checked);
               refreshFooter();
-            }),
-          );
+            });
+            const currencyHead = el('div', { class: 'currency-head' }, [
+              el('strong', { text: `${CURRENCY_NAMES[code] || code} (${code})` }),
+              el('span', {
+                text: `${lines.length} ${lines.length === 1 ? 'factura' : 'facturas'}`,
+              }),
+              el('span', {}, [el('strong', { text: `$${money.format(total)}` })]),
+            ]);
+            const table = el('table', {}, [
+              el('thead', {}, [
+                el('tr', {}, [
+                  ...(readOnly ? [] : [el('th', { class: 'col-check', scope: 'col' }, [headBox])]),
+                  el('th', { scope: 'col', text: 'Proveedor' }),
+                  el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
+                  el('th', { class: 'col-due', scope: 'col', text: 'Vence' }),
+                  el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
+                ]),
+              ]),
+              el('tbody', {}, tableRows),
+            ]);
+            return [currencyHead, table];
+          });
+          mobileBox.addEventListener('change', () => {
+            [...boxesOf(rows), ...headBoxes].forEach((b) => {
+              b.checked = mobileBox.checked;
+            });
+            refreshFooter();
+          });
 
           const head = el('div', { class: 'group-head' }, [
             el('div', { class: 'group-title' }, [
@@ -678,7 +773,7 @@
                 document.createTextNode(group.lines.length === 1 ? ' factura' : ' facturas'),
               ]),
               ...Object.keys(group.totals)
-                .sort()
+                .sort(byCurrency)
                 .map((code) =>
                   el('span', {}, [
                     document.createTextNode(`${code} `),
@@ -687,28 +782,14 @@
                 ),
             ]),
           ]);
-          const mobileAll = el('label', { class: 'select-all-mobile', for: allBoxes[1].id }, [
-            allBoxes[1],
+          const mobileAll = el('label', { class: 'select-all-mobile', for: mobileBox.id }, [
+            mobileBox,
             document.createTextNode('Seleccionar todas'),
-          ]);
-          const table = el('table', {}, [
-            el('thead', {}, [
-              el('tr', {}, [
-                ...(readOnly
-                  ? []
-                  : [el('th', { class: 'col-check', scope: 'col' }, [allBoxes[0]])]),
-                el('th', { scope: 'col', text: 'Proveedor' }),
-                el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
-                el('th', { class: 'col-due', scope: 'col', text: 'Vence' }),
-                el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
-              ]),
-            ]),
-            el('tbody', {}, rows),
           ]);
           return el(
             'section',
             { class: 'group', 'aria-label': label },
-            readOnly ? [head, table] : [head, mobileAll, table],
+            readOnly ? [head, ...sections] : [head, mobileAll, ...sections],
           );
         };
 

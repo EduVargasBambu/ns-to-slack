@@ -101,6 +101,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - Suitelet **interno** (sesión de NS). `GET` sirve `ui/gpv_approval_center.html`; la página llama a `GET ?action=pending` y a `POST ?action=approve|discard`.
 - Cada aprobador ve solo las líneas Pendientes en los niveles donde es aprobador o suplente (`gpv_pending_lines_lib`), agrupadas por concentrado y nivel, con totales por moneda y enlace a la factura.
 - **Orden dentro de cada grupo** (`sortLines`, decidido 24 nov): prioridad del proveedor (Alto → Medio → Bajo → sin prioridad), luego USD antes que MXN (otras monedas al final), luego monto de mayor a menor; los empates conservan el vencimiento. La prioridad se lee del proveedor al momento, así que cambiarla reordena sin tocar el concentrado. Aplica a la vista de aprobadores y a la de Tesorería; el CSV del lunes sigue el orden de la búsqueda guardada.
+- **Presentación** (24 nov): la página parte cada grupo en una tabla por moneda (USD, MXN y luego otras), con subtotal y "seleccionar todas" por tabla; en el celular el "seleccionar todas" es del grupo. La prioridad (`priority`, texto de la lista) se muestra como etiqueta junto al proveedor.
 - El empleado sale de `runtime.getCurrentUser()`, nunca de la petición; el servicio vuelve a validar el nivel.
 - CSRF: los POST exigen JSON y el encabezado `X-GPV-Request: 1`. XSS: la página pinta todo con `textContent`.
 - Errores: solo `GPV_INVALID_REQUEST` y `GPV_DISCARD_REASON_REQUIRED` se muestran tal cual; lo demás se registra en el log y el usuario ve un mensaje genérico.
