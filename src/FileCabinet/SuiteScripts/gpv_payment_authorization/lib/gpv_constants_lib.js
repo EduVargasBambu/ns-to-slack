@@ -86,6 +86,12 @@ define([], () => {
     DEPLOYMENT: 'customdeploy_gpv_approval_center_sl',
   };
 
+  /**
+   * Level whose approval is never cleared (the Director, decided 24 nov): once their area gives
+   * the OK it stays, even when a later level discards or the line expires.
+   */
+  const PERMANENT_APPROVAL_LEVEL = 1;
+
   /** Page of the Approval Center, served by gpv_approval_center_sl. */
   const APPROVAL_CENTER_PAGE =
     '/SuiteScripts/gpv_payment_authorization/ui/gpv_approval_center.html';
@@ -141,6 +147,7 @@ define([], () => {
     VendorBill,
     PROPOSAL_FOLDER_MARKER,
     APPROVAL_CENTER_PAGE,
+    PERMANENT_APPROVAL_LEVEL,
     Vendor,
     Employee,
     ApprovalCenter,

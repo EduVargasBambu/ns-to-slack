@@ -2,7 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope SameAccount
  * @description Weekly expiry: pending lines become expired, their bills go back to the pending
- * pool with every approval checkbox cleared, and open proposals are closed.
+ * pool with every approval checkbox cleared but the Director's (permanent), and open proposals
+ * are closed.
  * Resumable: each line leaves the search once expired; proposals close only when none is left.
  */
 define([
@@ -44,9 +45,11 @@ define([
 
     /** @type {Record<string, any>} */
     const billValues = { [VendorBill.AUTHORIZATION_STATUS]: expiredId };
-    levels.forEach((level) => {
-      billValues[level.approvalField] = false;
-    });
+    levels
+      .filter((level) => level.order !== constants.PERMANENT_APPROVAL_LEVEL)
+      .forEach((level) => {
+        billValues[level.approvalField] = false;
+      });
     record.submitFields({
       type: record.Type.VENDOR_BILL,
       id: line.billId,

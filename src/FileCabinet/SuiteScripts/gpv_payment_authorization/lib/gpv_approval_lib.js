@@ -4,8 +4,9 @@
  * @description Pure decision of what an approve or discard does to one proposal line.
  * The level and the approver come from the line and the configured levels, never from the caller.
  */
-define(['./gpv_line_state_machine_lib'], (stateMachine) => {
+define(['./gpv_line_state_machine_lib', './gpv_constants_lib'], (stateMachine, constants) => {
   const { LineStatus, LineAction } = stateMachine;
+  const { PERMANENT_APPROVAL_LEVEL } = constants;
 
   /** @enum {string} */
   const Outcome = Object.freeze({
@@ -57,13 +58,18 @@ define(['./gpv_line_state_machine_lib'], (stateMachine) => {
     const nextLevel = next.level === null ? null : levels[next.level - 1];
 
     if (action === LineAction.DISCARD) {
-      // A discarded bill starts over at level 1 if it comes back (decided 18 nov).
+      // A discarded bill starts over if it comes back (decided 18 nov), but keeps the
+      // Director's approval (decided 24 nov), so it returns at level 2 when the Director approved.
       return {
         outcome: Outcome.DISCARDED,
         level,
         next: { status: next.status, level: null },
         billStatus: LineStatus.DISCARDED,
-        checkboxes: Object.fromEntries(levels.map((l) => [l.approvalField, false])),
+        checkboxes: Object.fromEntries(
+          levels
+            .filter((l) => l.order !== PERMANENT_APPROVAL_LEVEL)
+            .map((l) => [l.approvalField, false]),
+        ),
       };
     }
     const authorized = next.status === LineStatus.AUTHORIZED;

@@ -56,6 +56,14 @@ describe('buildLine', () => {
     });
   });
 
+  it('keeps the Director and restarts at the CFO when the rest is out of order', () => {
+    expect(buildLine(checked(1, 3), LEVELS)).toEqual({
+      status: LineStatus.PENDING,
+      level: LEVELS[1],
+      levelsToClear: [LEVELS[2]],
+    });
+  });
+
   it('restarts at the Director and clears out-of-order approvals', () => {
     expect(buildLine(checked(2, 4), LEVELS)).toEqual({
       status: LineStatus.PENDING,

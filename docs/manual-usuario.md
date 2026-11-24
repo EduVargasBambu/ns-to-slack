@@ -55,7 +55,7 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
    - La casilla del encabezado de cada tabla selecciona todas las de esa moneda. En el celular, "Seleccionar todas" marca las del concentrado completo.
 3. Marca las facturas (o "seleccionar todas" del grupo). Abajo verás cuántas y por cuánto.
 4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada. Te llega un mensaje en Slack confirmando cuántas aprobaste, por cuánto y a quién pasaron.
-5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez desde el Director.
+5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez: desde el CFO si el Director ya la había aprobado, o desde el Director si no.
 6. Si seleccionas muchas facturas, puede que se procesen por partes: el mensaje te dirá cuántas faltan para que des clic otra vez.
 
 ### Aprobar antes de la junta (Director)
@@ -64,7 +64,7 @@ En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al con
 
 ## 6. Para CXP
 
-**Facturas descartadas:** cuando un directivo descarta facturas, llega un aviso al canal de CXP en Slack con quién las descartó, el motivo y la lista de facturas (proveedor, folio y monto). Esas facturas regresan a pendientes y pueden entrar a un concentrado futuro, empezando otra vez desde el Director.
+**Facturas descartadas:** cuando un directivo descarta facturas, llega un aviso al canal de CXP en Slack con quién las descartó, el motivo y la lista de facturas (proveedor, folio y monto). Esas facturas regresan a pendientes y pueden entrar a un concentrado futuro. La aprobación del Director se conserva, así que si ya la había dado, empiezan desde el CFO.
 
 **Prioridad de Proveedor:** en el registro del proveedor, el campo **Prioridad de Proveedor** (Alto, Medio o Bajo) define en qué orden salen sus facturas en el Centro de Autorización. Es opcional: los proveedores sin prioridad salen al final. Si cambias la prioridad, el orden se ajusta solo, incluso en concentrados que ya se generaron.
 
@@ -84,7 +84,7 @@ El botón **Ver autorizadas** abre en NetSuite la lista de todas las facturas au
 No. La app solo te muestra las facturas que esperan tu aprobación.
 
 **Descarté una factura por error, ¿qué pasa?**
-Regresa a pendientes y entra en un concentrado futuro, empezando otra vez desde el Director.
+Regresa a pendientes y entra en un concentrado futuro. Si el Director ya la había aprobado, su aprobación se conserva y empieza desde el CFO; las aprobaciones de CFO, CO-CEO 1 y CO-CEO 2 se tienen que volver a dar.
 
 **¿Qué pasa si no apruebo a tiempo?**
-El sábado la factura queda Vencida y regresa a pendientes para la semana siguiente.
+El sábado la factura queda Vencida y regresa a pendientes para la semana siguiente. La aprobación del Director se conserva; las de CFO, CO-CEO 1 y CO-CEO 2 se tienen que volver a dar.

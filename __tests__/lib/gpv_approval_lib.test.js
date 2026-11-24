@@ -57,14 +57,13 @@ describe('approve', () => {
 });
 
 describe('discard', () => {
-  it('discards, frees the bill and clears every checkbox', () => {
+  it('discards, frees the bill and clears every checkbox but the Director', () => {
     expect(plan(pendingAt('12'), '200', LineAction.DISCARD)).toEqual({
       outcome: Outcome.DISCARDED,
       level: LEVELS[1],
       next: { status: LineStatus.DISCARDED, level: null },
       billStatus: LineStatus.DISCARDED,
       checkboxes: {
-        custbody_gpv_dir_approval: false,
         custbody_gpv_cfo_approval: false,
         custbody_gpv_ceo1_approval: false,
         custbody_gpv_ceo2_approval: false,

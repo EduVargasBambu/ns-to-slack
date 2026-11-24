@@ -3,11 +3,14 @@
  * @NModuleScope SameAccount
  * @description Pure rules for approvals already checked on the bill (custbody_gpv_*_approval)
  * when it enters a proposal, e.g. a Director who approved before the meeting.
- * Approvals only count when they form an unbroken chain from level 1; otherwise the
- * bill starts over at level 1 and every out-of-order approval is cleared.
+ * Approvals only count when they form an unbroken chain from level 1; otherwise every
+ * out-of-order approval is cleared and the bill starts over at level 1, or at level 2 when
+ * level 1 approved (that approval is permanent, see PERMANENT_APPROVAL_LEVEL).
  */
-define(['./gpv_line_state_machine_lib'], (stateMachine) => {
+define(['./gpv_line_state_machine_lib', './gpv_constants_lib'], (stateMachine, constants) => {
   const { LineStatus } = stateMachine;
+  // shortcut: the rules assume the permanent level is level 1; revisit if it ever moves.
+  const KEEP = constants.PERMANENT_APPROVAL_LEVEL - 1;
 
   /**
    * @param {unknown} value Raw checkbox value: true from N/record, true or 'T' from N/search.
@@ -36,7 +39,7 @@ define(['./gpv_line_state_machine_lib'], (stateMachine) => {
   const getStartingState = (legacyValues) => {
     const { inOrderCount, hasGap } = analyze(legacyValues);
     if (hasGap) {
-      return { status: LineStatus.PENDING, level: 1 };
+      return { status: LineStatus.PENDING, level: isApproved(legacyValues[KEEP]) ? 2 : 1 };
     }
     return inOrderCount === legacyValues.length
       ? { status: LineStatus.AUTHORIZED, level: null }
@@ -54,7 +57,9 @@ define(['./gpv_line_state_machine_lib'], (stateMachine) => {
     if (!hasGap) {
       return [];
     }
-    return approved.flatMap((isLevelApproved, index) => (isLevelApproved ? [index + 1] : []));
+    return approved.flatMap((isLevelApproved, index) =>
+      isLevelApproved && index !== KEEP ? [index + 1] : [],
+    );
   };
 
   return { getStartingState, getLevelsToClear };

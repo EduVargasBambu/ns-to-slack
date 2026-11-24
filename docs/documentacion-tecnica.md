@@ -22,8 +22,9 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 ### Reglas
 
-- **Aprobaciones previas:** si la factura ya trae marcadas las casillas de aprobación en orden desde el nivel 1, arranca en el nivel siguiente; si todas están marcadas, nace Autorizada. Si hay huecos (p. ej. CFO marcado sin Director), arranca en nivel 1 y se limpian las casillas marcadas.
-- **Descartar:** la factura vuelve a pendientes y se limpian sus casillas; si vuelve a un concentrado, arranca en nivel 1.
+- **Aprobaciones previas:** si la factura ya trae marcadas las casillas de aprobación en orden desde el nivel 1, arranca en el nivel siguiente; si todas están marcadas, nace Autorizada. Si hay huecos (p. ej. CFO marcado sin Director), arranca en nivel 1 y se limpian las casillas marcadas, **salvo la del Director**: si el Director estaba marcado, se conserva y arranca en nivel 2.
+- **Descartar:** la factura vuelve a pendientes y se limpian sus casillas, salvo la del Director; si vuelve a un concentrado, arranca en nivel 2 si el Director ya había aprobado, o en nivel 1 si no.
+- **Aprobación permanente del Director** (decidido 24 nov): la casilla del nivel 1 nunca se limpia, ni al descartar, ni al vencer, ni por huecos. El nivel está fijo en el código (`PERMANENT_APPROVAL_LEVEL = 1` en `gpv_constants_lib`). Motivo: si el Director ya dio el visto bueno de su área, la factura está bien; donde se traba o se rechaza es en CFO, CO-CEO 1 y CO-CEO 2.
 - **Una factura no puede estar en dos concentrados activos:** la app agrega el filtro "fuera de un concentrado activo" a la búsqueda.
 
 ## 4. Objetos SDF
@@ -75,7 +76,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 ### 4.2 Vencimiento semanal
 
-- Toma todas las líneas en **Pendiente**. Por cada una: la factura pasa a Vencida y se limpian sus casillas de aprobación; se registra "Vencimiento semanal" en la bitácora; la línea pasa a Vencida y se queda sin nivel.
+- Toma todas las líneas en **Pendiente**. Por cada una: la factura pasa a Vencida y se limpian sus casillas de aprobación, salvo la del Director; se registra "Vencimiento semanal" en la bitácora; la línea pasa a Vencida y se queda sin nivel.
 - **Orden:** primero la factura y después la línea. Si el script se corta, la línea sigue Pendiente y el siguiente intento repite la factura (mismos valores) y la bitácora (idempotente). Nunca queda una factura atorada en Pendiente.
 - Una línea Pendiente sin nivel válido también se vence, para no dejar su factura fuera de los concentrados futuros.
 - **Reanudable:** se reprograma si quedan menos de 200 unidades. Los concentrados abiertos se cierran solo cuando ya no queda ninguna línea Pendiente.
@@ -92,7 +93,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 - `gpv_approval_service_lib` (`approve`, `discard`) es el núcleo de todas las vías. El nivel y el aprobador salen de la línea y de los niveles configurados, nunca de la petición. Puede aprobar el aprobador o el suplente del nivel en que va la línea.
 - Aprobar: marca la casilla del nivel en la factura y avanza la línea; en el último nivel la factura y la línea quedan **Autorizadas**.
-- Descartar: la factura queda Descartada y se limpian todas sus casillas; la línea guarda motivo y quién descartó. El motivo es obligatorio si así lo dice la Configuración.
+- Descartar: la factura queda Descartada y se limpian sus casillas, salvo la del Director; la línea guarda motivo y quién descartó. El motivo es obligatorio si así lo dice la Configuración.
 - Orden de escritura: factura → bitácora (con llave de idempotencia) → línea. Un doble clic o una línea que ya avanzó no escribe nada. Un intento de alguien que no es el aprobador se registra en la bitácora ("Intento no autorizado") y no cambia nada.
 - Gobernanza: ~30 unidades por línea; un Suitelet tiene 1,000. El llamador pasa `hasBudget`: si se acaban las unidades, el servicio se detiene limpio y devuelve las líneas restantes como `NOT_PROCESSED` ("faltan N, da clic otra vez"). Nunca queda una línea a medias. Plan para el Centro: hasta ~25 líneas al momento; más, a segundo plano (Map/Reduce).
 
@@ -155,6 +156,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | 23 nov 2026 | Casillas de aprobación propias en SDF (los campos del prototipo solo existían en el sandbox) |
 | 23 nov 2026 | El Director es el nivel 1, con un aprobador general (no por área) |
 | 23 nov 2026 | Slack no puede llamar directo a NetSuite (405 por User-Agent). Vía principal: DM con enlace al Centro de Autorización interno; botones nativos después, con un Cloudflare Worker |
+| 24 nov 2026 | La aprobación del Director (nivel 1, fijo en código) es permanente: no se limpia al descartar, vencer ni por huecos |
 
 ## 8. Pendientes y riesgos
 

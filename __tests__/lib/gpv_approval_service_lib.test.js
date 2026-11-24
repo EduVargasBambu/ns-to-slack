@@ -180,7 +180,7 @@ describe('discard', () => {
     expect(order).toEqual([]);
   });
 
-  it('frees the bill, clears its boxes and records who and why', () => {
+  it('frees the bill, clears its boxes but the Director and records who and why', () => {
     givenLines([{ id: '7', billId: '500', status: 'val_gpv_pending', levelId: '12' }]);
 
     const [result] = service.discard({
@@ -191,7 +191,6 @@ describe('discard', () => {
     });
     expect(result.outcome).toBe('DISCARDED');
     expect(order[0].values).toEqual({
-      custbody_gpv_dir_approval: false,
       custbody_gpv_cfo_approval: false,
       custbody_gpv_authorization_status: 'val_gpv_discarded',
     });

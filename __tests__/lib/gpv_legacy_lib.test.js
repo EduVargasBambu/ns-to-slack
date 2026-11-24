@@ -43,12 +43,20 @@ describe('getStartingState', () => {
 
   describe('approvals out of order restart the chain at level 1', () => {
     it.each([
-      ['CEO 1 only', [EMPTY, APPROVED, EMPTY]],
-      ['CEO 2 only', [EMPTY, EMPTY, APPROVED]],
-      ['CFO and CEO 2, skipping CEO 1', [APPROVED, EMPTY, APPROVED]],
-      ['CEO 1 and CEO 2, skipping CFO', [EMPTY, APPROVED, APPROVED]],
+      ['level 2 only', [EMPTY, APPROVED, EMPTY]],
+      ['level 3 only', [EMPTY, EMPTY, APPROVED]],
+      ['levels 2 and 3, skipping level 1', [EMPTY, APPROVED, APPROVED]],
     ])('%s', (_label, values) => {
       expect(getStartingState(values)).toEqual({ status: LineStatus.PENDING, level: 1 });
+    });
+  });
+
+  describe('a level 1 approval is permanent, so out of order restarts at level 2', () => {
+    it.each([
+      ['levels 1 and 3, skipping 2', [APPROVED, EMPTY, APPROVED]],
+      ['levels 1, 2 and 4, skipping 3', [APPROVED, APPROVED, EMPTY, APPROVED]],
+    ])('%s', (_label, values) => {
+      expect(getStartingState(values)).toEqual({ status: LineStatus.PENDING, level: 2 });
     });
   });
 
@@ -83,11 +91,15 @@ describe('getLevelsToClear', () => {
   });
 
   it.each([
-    ['CEO 1 only', [EMPTY, APPROVED, EMPTY], [2]],
-    ['CEO 2 only', [EMPTY, EMPTY, APPROVED], [3]],
-    ['CFO and CEO 2, skipping CEO 1', [APPROVED, EMPTY, APPROVED], [1, 3]],
-    ['CEO 1 and CEO 2, skipping CFO', [EMPTY, APPROVED, APPROVED], [2, 3]],
-  ])('clears every approved level when out of order: %s', (_label, values, expected) => {
-    expect(getLevelsToClear(values)).toEqual(expected);
-  });
+    ['level 2 only', [EMPTY, APPROVED, EMPTY], [2]],
+    ['level 3 only', [EMPTY, EMPTY, APPROVED], [3]],
+    ['levels 2 and 3, skipping level 1', [EMPTY, APPROVED, APPROVED], [2, 3]],
+    ['levels 1 and 3: level 1 is kept', [APPROVED, EMPTY, APPROVED], [3]],
+    ['levels 1, 2 and 4: level 1 is kept', [APPROVED, APPROVED, EMPTY, APPROVED], [2, 4]],
+  ])(
+    'clears every approved level but level 1 when out of order: %s',
+    (_label, values, expected) => {
+      expect(getLevelsToClear(values)).toEqual(expected);
+    },
+  );
 });

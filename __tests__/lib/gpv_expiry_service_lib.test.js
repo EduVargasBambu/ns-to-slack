@@ -86,7 +86,7 @@ describe('expirePendingLines', () => {
         id: '500',
         values: {
           custbody_gpv_authorization_status: 'val_gpv_expired',
-          custbody_gpv_dir_approval: false,
+          // The Director's approval is permanent; only the levels after it are cleared.
           custbody_gpv_cfo_approval: false,
         },
       },
