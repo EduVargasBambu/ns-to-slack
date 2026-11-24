@@ -37,13 +37,13 @@ An internal tool for one company (SDF Account Customization), built around Grupo
 ## Brand Commitments
 
 - Must read clearly as **Grupo Vallas** (confirmed by the user, 24 nov 2026). Reference: the company website, charcoal gray and orange on white with a humanist sans (Avenir-like).
-- The user will provide the Grupo Vallas logo (SVG or PNG) for the header.
+- No logo in the header (decided by the user, 24 nov 2026); identity comes from color and type.
 - Slack app name in the test workspace: "Asistente NetSuite".
 
 ## Evidence on Hand
 
 - Real data comes from NetSuite at runtime; no static content, testimonials or metrics to show.
-- Logo: pending from the user. Do not draw or approximate a logo.
+- No logo. Do not draw or approximate one.
 
 ## Product Principles
 
