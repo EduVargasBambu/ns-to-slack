@@ -103,17 +103,52 @@ describe('notifyLevels', () => {
   });
 });
 
+describe('notifyAllApprovers', () => {
+  it('checks every level, once per approver, and skips those without Slack user', () => {
+    expect(notifier.notifyAllApprovers()).toBe(2);
+    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100', 'U400']);
+  });
+
+  it('sends nothing to an approver with nothing pending', () => {
+    pendingLines.findForEmployee.mockReturnValue([]);
+    expect(notifier.notifyAllApprovers()).toBe(0);
+  });
+});
+
+describe('notifyApprover', () => {
+  it('sends nothing for discards only or without a Slack user', () => {
+    expect(notifier.notifyApprover('100', [{ lineId: '9', outcome: 'DISCARDED' }])).toBe(false);
+    expect(
+      notifier.notifyApprover('300', [{ lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null }]),
+    ).toBe(false);
+    expect(slackClient.postMessage).not.toHaveBeenCalled();
+  });
+});
+
 describe('notifyAfterAction', () => {
-  it('notifies the next level and treasury for authorized lines', () => {
-    pendingLines.findByIds.mockReturnValue([
-      { vendor: 'Prov', billNumber: 'F-1', amount: 5, currency: 'MXN' },
-    ]);
-    notifier.notifyAfterAction([
-      { lineId: '7', outcome: 'ADVANCED', nextLevelId: '14' },
-      { lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null },
-      { lineId: '9', outcome: 'DISCARDED' },
-    ]);
+  it('confirms to the approver and notifies the next level and treasury', () => {
+    pendingLines.findByIds.mockImplementation((ids) =>
+      ids.map(() => ({ vendor: 'Prov', billNumber: 'F-1', amount: 5, currency: 'MXN' })),
+    );
+    notifier.notifyAfterAction(
+      [
+        { lineId: '7', outcome: 'ADVANCED', nextLevelId: '14' },
+        { lineId: '8', outcome: 'AUTHORIZED', nextLevelId: null },
+        { lineId: '9', outcome: 'DISCARDED' },
+      ],
+      '100',
+    );
+    expect(slackClient.postMessage).toHaveBeenCalledWith(
+      'U100',
+      [
+        '*✅ Aprobaste 2 facturas*',
+        'Total: MXN $10.00',
+        '• 1 pasa a CEO 2',
+        '• 1 quedó autorizada para pago',
+      ].join('\n'),
+    );
     expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U400', 'CTREAS']);
+    expect(pendingLines.findByIds).toHaveBeenCalledWith(['7', '8']);
     expect(pendingLines.findByIds).toHaveBeenCalledWith(['8']);
     const notice = slackClient.call.mock.calls[1][1];
     expect(notice.text).toBe('1 factura autorizada para pago');

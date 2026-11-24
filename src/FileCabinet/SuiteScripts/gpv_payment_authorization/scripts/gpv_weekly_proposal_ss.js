@@ -69,11 +69,8 @@ define([
       ...result.summary,
     });
     const posted = slackClient.postMessage(apChannel, text);
-    const dms = notifier.notifyLevels(
-      result.summary.pendingByLevel
-        .filter((/** @type {{ count: number }} */ l) => l.count > 0)
-        .map((/** @type {{ levelId: string }} */ l) => l.levelId),
-    );
+    // Everyone with pending bills, not only this proposal's levels: older ones may still wait.
+    const dms = notifier.notifyAllApprovers();
     notifier.notifyTreasury(result.summary.authorizedLineIds);
     log.audit(TITLE, `DMs a aprobadores: ${dms}.`);
     log.audit(

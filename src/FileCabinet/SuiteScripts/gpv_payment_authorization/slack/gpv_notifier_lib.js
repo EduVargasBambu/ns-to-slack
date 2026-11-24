@@ -96,6 +96,13 @@ define([
   };
 
   /**
+   * Weekly reminder: DMs every approver who has anything pending, in any open proposal.
+   * @returns {number} DMs sent.
+   */
+  const notifyAllApprovers = () =>
+    notifyLevels(levelLib.getLevels().map((/** @type {GpvLevel} */ l) => l.id));
+
+  /**
    * Tells treasury how many bills were authorized, with a button to the authorized view.
    * @param {string[]} lineIds Lines that just became authorized.
    * @returns {boolean} Whether the notice was posted.
@@ -122,15 +129,61 @@ define([
   };
 
   /**
-   * Notices that follow an approve or discard: next approvers and treasury.
+   * Confirms by DM to the approver what they just approved and where it went.
+   * @param {string} employeeId Who approved.
    * @param {{ lineId: string, outcome: string, nextLevelId?: string|null }[]} results
+   * @returns {boolean} Whether the DM was sent.
    */
-  const notifyAfterAction = (results) => {
+  const notifyApprover = (employeeId, results) => {
+    const approved = results.filter(
+      (r) => r.outcome === Outcome.ADVANCED || r.outcome === Outcome.AUTHORIZED,
+    );
+    if (!approved.length) return false;
+    try {
+      const slackUser = getSlackUserId(employeeId);
+      if (!slackUser) return false;
+      /** @type {Map<string, number>} next level id -> lines */
+      const moved = new Map();
+      approved
+        .filter((r) => r.outcome === Outcome.ADVANCED)
+        .forEach((r) => {
+          const id = String(r.nextLevelId || '');
+          moved.set(id, (moved.get(id) || 0) + 1);
+        });
+      /** @type {GpvLevel[]} */
+      const levels = levelLib.getLevels();
+      const text = messages.buildApprovalConfirmation({
+        lines: pendingLines.findByIds(approved.map((r) => String(r.lineId))),
+        nextLevels: levels
+          .filter((l) => moved.has(l.id))
+          .map((l) => ({ levelName: l.name, count: moved.get(l.id) || 0 })),
+        authorizedCount: approved.filter((r) => r.outcome === Outcome.AUTHORIZED).length,
+      });
+      if (!text) return false;
+      slackClient.postMessage(slackUser, text);
+      return true;
+    } catch (e) {
+      log.error(
+        TITLE,
+        `Confirmación al empleado ${employeeId}: ${/** @type {Error} */ (e).message}`,
+      );
+      return false;
+    }
+  };
+
+  /**
+   * Notices that follow an approve or discard: confirmation to the approver, next approvers
+   * and treasury.
+   * @param {{ lineId: string, outcome: string, nextLevelId?: string|null }[]} results
+   * @param {string} employeeId Who acted.
+   */
+  const notifyAfterAction = (results, employeeId) => {
+    notifyApprover(employeeId, results);
     notifyLevels(
       results.filter((r) => r.outcome === Outcome.ADVANCED).map((r) => String(r.nextLevelId || '')),
     );
     notifyTreasury(results.filter((r) => r.outcome === Outcome.AUTHORIZED).map((r) => r.lineId));
   };
 
-  return { notifyLevels, notifyTreasury, notifyAfterAction };
+  return { notifyLevels, notifyAllApprovers, notifyTreasury, notifyApprover, notifyAfterAction };
 });

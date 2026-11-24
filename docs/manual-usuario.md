@@ -40,7 +40,7 @@ Se ve en la factura, en el campo **Estado de autorización de pago**.
 
 ### El aviso en Slack
 
-Cuando tienes facturas esperando tu aprobación, te llega un mensaje directo de la app en Slack: cuántas son, de qué concentrado y por cuánto. El botón **Ver en NetSuite** abre el Centro de Autorización. Te llega el lunes con el concentrado y cada vez que el nivel anterior te pasa facturas nuevas.
+Cuando tienes facturas esperando tu aprobación, te llega un mensaje directo de la app en Slack: cuántas son, de qué concentrado y por cuánto. El botón **Ver en NetSuite** abre el Centro de Autorización. Te llega el lunes con el concentrado (con todo lo que tengas pendiente, también de concentrados anteriores) y cada vez que el nivel anterior te pasa facturas nuevas.
 
 Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de empleado en NetSuite (lo hace el administrador).
 
@@ -50,8 +50,9 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
 
 1. Abre el **Centro de Autorización** (desde el botón "Ver en NetSuite" del mensaje de Slack, o desde NetSuite). Funciona en el celular.
 2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado, con totales en MXN y USD. El número de factura abre la factura con sus adjuntos.
+   - **Orden:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad. Dentro de cada prioridad, primero las facturas en dólares y luego en pesos, de la más grande a la más chica.
 3. Marca las facturas (o "seleccionar todas" del grupo). Abajo verás cuántas y por cuánto.
-4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada.
+4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada. Te llega un mensaje en Slack confirmando cuántas aprobaste, por cuánto y a quién pasaron.
 5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez desde el Director.
 6. Si seleccionas muchas facturas, puede que se procesen por partes: el mensaje te dirá cuántas faltan para que des clic otra vez.
 
@@ -60,6 +61,8 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
 En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al concentrado, pasará directo al CFO.
 
 ## 6. Para CXP
+
+**Prioridad de Proveedor:** en el registro del proveedor, el campo **Prioridad de Proveedor** (Alto, Medio o Bajo) define en qué orden salen sus facturas en el Centro de Autorización. Es opcional: los proveedores sin prioridad salen al final. Si cambias la prioridad, el orden se ajusta solo, incluso en concentrados que ya se generaron.
 
 - **Cada lunes** llega al canal de CXP en Slack el resumen del concentrado: cuántas facturas, los totales en MXN y USD, y cuántas esperan a cada nivel.
 - **El archivo del concentrado** (CSV, se abre en Excel) queda adjunto al registro del concentrado en NetSuite, con las mismas columnas de la búsqueda de pendientes.

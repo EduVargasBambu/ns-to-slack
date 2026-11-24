@@ -105,5 +105,31 @@ define(['./gpv_proposal_message_lib'], (proposalMessage) => {
     return withButton(title, total, 'Ver autorizadas', viewUrl, 'gpv_open_authorized');
   };
 
-  return { escapeMrkdwn, buildApproverDm, buildTreasuryMessage };
+  /**
+   * Confirmation DM to whoever just approved: how many, total, and where they went.
+   * @param {object} options
+   * @param {{ amount: number, currency: string }[]} options.lines Lines just approved.
+   * @param {{ levelName: string, count: number }[]} options.nextLevels Lines that moved on.
+   * @param {number} options.authorizedCount Lines that got the last approval.
+   * @returns {string|null} Slack mrkdwn, null when nothing was approved.
+   */
+  const buildApprovalConfirmation = ({ lines, nextLevels, authorizedCount }) => {
+    if (!lines.length) return null;
+    const n = lines.length;
+    return [
+      `*✅ Aprobaste ${n} ${n === 1 ? 'factura' : 'facturas'}*`,
+      `Total: ${formatTotals(mergeTotals(lines.map((l) => ({ [l.currency]: l.amount }))))}`,
+      ...nextLevels.map(
+        ({ levelName, count }) =>
+          `• ${count} ${count === 1 ? 'pasa' : 'pasan'} a ${escapeMrkdwn(levelName)}`,
+      ),
+      ...(authorizedCount
+        ? [
+            `• ${authorizedCount} ${authorizedCount === 1 ? 'quedó autorizada' : 'quedaron autorizadas'} para pago`,
+          ]
+        : []),
+    ].join('\n');
+  };
+
+  return { escapeMrkdwn, buildApproverDm, buildTreasuryMessage, buildApprovalConfirmation };
 });

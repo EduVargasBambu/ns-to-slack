@@ -44,7 +44,7 @@ define([], () => {
 
     return [
       `*Concentrado de la junta del ${meetingDate}*`,
-      `${billCount} ${billCount === 1 ? 'factura' : 'facturas'} por autorizar.`,
+      `${billCount} ${billCount === 1 ? 'factura' : 'facturas'} en el concentrado.`,
       '',
       '*Totales*',
       ...totalLines,

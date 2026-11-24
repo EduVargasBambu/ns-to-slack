@@ -70,6 +70,11 @@ define([], () => {
   /** File Cabinet folder for the proposal CSV files; resolved through a placeholder file. */
   const PROPOSAL_FOLDER_MARKER = '/SuiteScripts/gpv_payment_authorization/proposals/README.txt';
 
+  const Vendor = {
+    /** Payment priority (customlist_gpv_vendor_priority); orders bills in the Approval Center. */
+    PRIORITY: 'custentity_gpv_vendor_priority',
+  };
+
   const Employee = {
     /** Slack member id (U...) of the employee, for direct messages. */
     SLACK_USER: 'custentity_gpv_slack_user',
@@ -112,6 +117,14 @@ define([], () => {
     WEEKLY_EXPIRY: 'val_gpv_weekly_expiry',
   };
 
+  /** Listed from highest to lowest priority. */
+  const VendorPriorityList = {
+    ID: 'customlist_gpv_vendor_priority',
+    HIGH: 'val_gpv_high',
+    MEDIUM: 'val_gpv_medium',
+    LOW: 'val_gpv_low',
+  };
+
   const ChannelList = {
     ID: 'customlist_gpv_channel',
     SLACK: 'val_gpv_slack',
@@ -128,11 +141,13 @@ define([], () => {
     VendorBill,
     PROPOSAL_FOLDER_MARKER,
     APPROVAL_CENTER_PAGE,
+    Vendor,
     Employee,
     ApprovalCenter,
     ProposalStatusList,
     LineStatusList,
     ActionList,
     ChannelList,
+    VendorPriorityList,
   };
 });

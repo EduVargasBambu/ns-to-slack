@@ -5,7 +5,7 @@ jest.mock('N/error', () => ({
   create: ({ name, message }) => Object.assign(new Error(message), { name }),
 }));
 
-const { groupLines, groupByProposal } = pending;
+const { sortLines, groupLines, groupByProposal } = pending;
 
 const LEVELS = [
   { id: '11', name: 'Director', order: 1, approvalField: 'a', approverId: '100', substituteId: '' },
@@ -22,6 +22,7 @@ const line = (lineId, proposalId, levelId, amount, currency) => ({
   amount,
   currency,
   dueDate: '30/11/2026',
+  priorityRank: 3,
 });
 
 describe('groupLines', () => {
@@ -70,5 +71,39 @@ describe('groupByProposal', () => {
       ['20', ['1', '3'], { MXN: 100.25 }],
     ]);
     expect(groups[0].meetingDate).toBe('fecha 10');
+  });
+});
+
+describe('sortLines', () => {
+  const l = (lineId, priorityRank, currency, amount) => ({
+    ...line(lineId, '10', '11', amount, currency),
+    priorityRank,
+  });
+
+  it('orders by priority, then USD before MXN, then amount high to low', () => {
+    const sorted = sortLines([
+      l('none-usd', 3, 'USD', 999),
+      l('low-mxn', 2, 'MXN', 5),
+      l('high-mxn-small', 0, 'MXN', 10),
+      l('high-usd', 0, 'USD', 1),
+      l('high-mxn-big', 0, 'MXN', 500),
+      l('high-eur', 0, 'EUR', 50),
+      l('medium-mxn', 1, 'MXN', 1),
+    ]);
+    expect(sorted.map((x) => x.lineId)).toEqual([
+      'high-usd',
+      'high-mxn-big',
+      'high-mxn-small',
+      'high-eur',
+      'medium-mxn',
+      'low-mxn',
+      'none-usd',
+    ]);
+  });
+
+  it('keeps the search order (due date) on ties and does not mutate the input', () => {
+    const input = [l('a', 3, 'MXN', 10), l('b', 3, 'MXN', 10)];
+    expect(sortLines(input).map((x) => x.lineId)).toEqual(['a', 'b']);
+    expect(sortLines(input)).not.toBe(input);
   });
 });

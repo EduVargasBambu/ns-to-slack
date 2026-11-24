@@ -30,7 +30,15 @@ define([
   stateMachine,
   currencyLib,
 ) => {
-  const { Proposal, ProposalLine, VendorBill, ProposalStatusList, LineStatusList } = constants;
+  const {
+    Proposal,
+    ProposalLine,
+    VendorBill,
+    ProposalStatusList,
+    LineStatusList,
+    AuditLog,
+    ActionList,
+  } = constants;
   const { LineStatus } = stateMachine;
   const { AuditAction, AuditChannel } = auditLog;
 
@@ -237,6 +245,32 @@ define([
   };
 
   /**
+   * Lines out of these that were approved in the app (Center or Slack), per the audit log.
+   * @param {string[]} lineIds
+   * @returns {Set<string>}
+   */
+  const findApprovedInApp = (lineIds) => {
+    const approved = new Set();
+    if (!lineIds.length) return approved;
+    search
+      .create({
+        type: AuditLog.RECORD,
+        filters: [
+          [AuditLog.LINE, 'anyof', lineIds],
+          'AND',
+          [AuditLog.ACTION, 'anyof', listLib.getValueId(ActionList.ID, ActionList.APPROVE)],
+        ],
+        columns: [AuditLog.LINE],
+      })
+      .run()
+      .each((result) => {
+        approved.add(String(result.getValue(AuditLog.LINE)));
+        return true;
+      });
+    return approved;
+  };
+
+  /**
    * Totals, CSV and summary of the whole proposal (lines from every run).
    * @param {string} proposalId
    * @param {string} searchId
@@ -271,6 +305,11 @@ define([
       },
     });
 
+    const authorizedIds = lines
+      .filter((line) => line.statusId === authorizedId)
+      .map((line) => line.id);
+    const approvedInApp = findApprovedInApp(authorizedIds);
+
     return {
       billCount: lines.length,
       totals,
@@ -280,9 +319,12 @@ define([
         count: lines.filter((line) => line.statusId === pendingId && line.levelId === level.id)
           .length,
       })),
-      authorizedCount: lines.filter((line) => line.statusId === authorizedId).length,
-      /** Lines born authorized (every box already checked), for the treasury notice. */
-      authorizedLineIds: lines.filter((line) => line.statusId === authorizedId).map((l) => l.id),
+      authorizedCount: authorizedIds.length,
+      /**
+       * Lines born authorized (every box already checked), for the treasury notice. Lines
+       * authorized in the app already got their notice, so a re-run does not repeat it.
+       */
+      authorizedLineIds: authorizedIds.filter((id) => !approvedInApp.has(id)),
     };
   };
 

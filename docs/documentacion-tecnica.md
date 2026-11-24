@@ -16,8 +16,8 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 ## 3. Flujo
 
 1. **Lunes (`customscript_gpv_weekly_proposal_ss`):** genera el concentrado con la búsqueda de pendientes, guarda un CSV con las columnas de la búsqueda y publica un resumen (totales por moneda y facturas por nivel) en el canal de CXP. Ver 4.1.
-2. Cada nivel aprueba o descarta sus facturas, en orden: Director → CFO → CEO 1 → CEO 2. **(pendiente: Fase 4)**
-3. Al aprobar el último nivel, la factura queda **Autorizada** y se avisa a Tesorería. **(pendiente)**
+2. Cada nivel aprueba o descarta sus facturas en el Centro de Autorización, en orden: Director → CFO → CEO 1 → CEO 2. Ver 4.5 y 4.6.
+3. Al aprobar el último nivel, la factura queda **Autorizada** y se avisa a Tesorería.
 4. **Sábado (`customscript_gpv_weekly_expiry_ss`):** las líneas aún Pendientes pasan a **Vencida**, la factura queda disponible para otro concentrado y el concentrado se cierra.
 
 ### Reglas
@@ -51,7 +51,8 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 ### Otros
 
 - `custentity_gpv_slack_user`: ID de Slack del empleado (liga empleado NS ↔ usuario Slack).
-- Listas: estado de línea, estado de concentrado, acción de bitácora, canal.
+- `custentity_gpv_vendor_priority` ("Prioridad de Proveedor", en el proveedor): lista `customlist_gpv_vendor_priority` con Alto, Medio y Bajo (`val_gpv_high/medium/low`). Opcional; ordena las facturas en el Centro (decidido 24 nov).
+- Listas: estado de línea, estado de concentrado, acción de bitácora, canal, prioridad de proveedor.
 
 ### Scripts
 
@@ -99,6 +100,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 - Suitelet **interno** (sesión de NS). `GET` sirve `ui/gpv_approval_center.html`; la página llama a `GET ?action=pending` y a `POST ?action=approve|discard`.
 - Cada aprobador ve solo las líneas Pendientes en los niveles donde es aprobador o suplente (`gpv_pending_lines_lib`), agrupadas por concentrado y nivel, con totales por moneda y enlace a la factura.
+- **Orden dentro de cada grupo** (`sortLines`, decidido 24 nov): prioridad del proveedor (Alto → Medio → Bajo → sin prioridad), luego USD antes que MXN (otras monedas al final), luego monto de mayor a menor; los empates conservan el vencimiento. La prioridad se lee del proveedor al momento, así que cambiarla reordena sin tocar el concentrado. Aplica a la vista de aprobadores y a la de Tesorería; el CSV del lunes sigue el orden de la búsqueda guardada.
 - El empleado sale de `runtime.getCurrentUser()`, nunca de la petición; el servicio vuelve a validar el nivel.
 - CSRF: los POST exigen JSON y el encabezado `X-GPV-Request: 1`. XSS: la página pinta todo con `textContent`.
 - Errores: solo `GPV_INVALID_REQUEST` y `GPV_DISCARD_REASON_REQUIRED` se muestran tal cual; lo demás se registra en el log y el usuario ve un mensaje genérico.
@@ -108,8 +110,9 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 ### 4.6 Avisos en Slack
 
-- **DM al aprobador** (`gpv_notifier_lib.notifyLevels`): el lunes, a los aprobadores de los niveles con facturas; y desde el Centro, al aprobador del siguiente nivel cuando unas líneas avanzan. El DM resume todo lo que esa persona tiene pendiente (la misma búsqueda del Centro) y trae el botón "Ver en NetSuite" al Centro. Un DM por persona aunque tenga varios niveles.
-- **Aviso a Tesorería** (`notifyTreasury`): cuando líneas quedan Autorizadas (en el Centro o al nacer autorizadas el lunes). Mensaje corto: cuántas facturas se autorizaron, total por moneda y botón "Ver autorizadas" a la vista de Tesorería del Centro, donde está el detalle.
+- **DM al aprobador** (`gpv_notifier_lib.notifyLevels`): el lunes, a **todos** los aprobadores con algo pendiente en cualquier concentrado (`notifyAllApprovers`, decidido 24 nov; antes solo los niveles del concentrado recién generado); y desde el Centro, al aprobador del siguiente nivel cuando unas líneas avanzan. El DM resume todo lo que esa persona tiene pendiente (la misma búsqueda del Centro) y trae el botón "Ver en NetSuite" al Centro. Un DM por persona aunque tenga varios niveles.
+- **Aviso a Tesorería** (`notifyTreasury`): cuando líneas quedan Autorizadas (en el Centro o al nacer autorizadas el lunes). El lunes solo avisa de las que **nacieron** autorizadas: las que tienen aprobación en la bitácora ya tuvieron su aviso, así que volver a correr el script no lo repite. Mensaje corto: cuántas facturas se autorizaron, total por moneda y botón "Ver autorizadas" a la vista de Tesorería del Centro, donde está el detalle.
+- **Confirmación al aprobador** (`notifyApprover`, decidido 24 nov): tras aprobar en el Centro, DM a quien aprobó con cuántas facturas, total por moneda, cuántas pasan a cada nivel y cuántas quedaron autorizadas. No se manda por descartes.
 - Requisitos: el **Usuario de Slack** (`custentity_gpv_slack_user`) capturado en el empleado; si falta, se registra en el log y no se le avisa. La app de Slack necesita `chat:write`.
 - Un aviso que falla se registra en el log y **nunca** deshace ni bloquea la aprobación. Los textos de NetSuite se escapan para que no generen menciones ni enlaces en Slack.
 - El botón es solo un enlace, pero si la app de Slack tiene **Interactivity** encendida, Slack manda el clic a la Request URL; NetSuite la rechaza (405) y Slack muestra un ⚠️ junto al botón. Mantener Interactivity apagada hasta que exista el Cloudflare Worker.

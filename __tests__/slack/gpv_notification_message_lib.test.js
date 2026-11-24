@@ -1,6 +1,6 @@
 import messages from '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/slack/gpv_notification_message_lib';
 
-const { escapeMrkdwn, buildApproverDm, buildTreasuryMessage } = messages;
+const { escapeMrkdwn, buildApproverDm, buildTreasuryMessage, buildApprovalConfirmation } = messages;
 
 const URL = 'https://1234.app.netsuite.com/app/site/hosting/scriptlet.nl?script=1&deploy=1';
 
@@ -73,5 +73,45 @@ describe('buildTreasuryMessage', () => {
 
   it('returns null with no bills', () => {
     expect(buildTreasuryMessage([], VIEW)).toBeNull();
+  });
+});
+
+describe('buildApprovalConfirmation', () => {
+  it('says how many were approved, the total and where they went', () => {
+    expect(
+      buildApprovalConfirmation({
+        lines: [
+          { amount: 100, currency: 'MXN' },
+          { amount: 50, currency: 'MXN' },
+          { amount: 10, currency: 'USD' },
+        ],
+        nextLevels: [
+          { levelName: 'CFO', count: 2 },
+          { levelName: 'CEO <1>', count: 1 },
+        ],
+        authorizedCount: 0,
+      }),
+    ).toBe(
+      [
+        '*✅ Aprobaste 3 facturas*',
+        'Total: MXN $150.00 · USD $10.00',
+        '• 2 pasan a CFO',
+        '• 1 pasa a CEO &lt;1&gt;',
+      ].join('\n'),
+    );
+  });
+
+  it('mentions the ones authorized for payment', () => {
+    const text = buildApprovalConfirmation({
+      lines: [{ amount: 1, currency: 'MXN' }],
+      nextLevels: [],
+      authorizedCount: 1,
+    });
+    expect(text).toContain('*✅ Aprobaste 1 factura*');
+    expect(text).toContain('• 1 quedó autorizada para pago');
+  });
+
+  it('returns null when nothing was approved', () => {
+    expect(buildApprovalConfirmation({ lines: [], nextLevels: [], authorizedCount: 0 })).toBeNull();
   });
 });

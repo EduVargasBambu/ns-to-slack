@@ -1,0 +1,15 @@
+<entitycustomfield scriptid="custentity_gpv_vendor_priority">
+  <accesslevel>2</accesslevel>
+  <appliestovendor>T</appliestovendor>
+  <description>Prioridad de pago del proveedor. Ordena las facturas en el Centro de Autorización.</description>
+  <displaytype>NORMAL</displaytype>
+  <fieldtype>SELECT</fieldtype>
+  <help>Prioridad de pago del proveedor: Alto, Medio o Bajo. En el Centro de Autorización las facturas salen primero por prioridad (de Alto a Bajo, y al final las de proveedores sin prioridad); dentro de cada prioridad, primero USD y luego pesos, del monto mayor al menor.</help>
+  <isparent>F</isparent>
+  <ismandatory>F</ismandatory>
+  <label>Prioridad de Proveedor</label>
+  <searchlevel>2</searchlevel>
+  <selectrecordtype>[scriptid=customlist_gpv_vendor_priority]</selectrecordtype>
+  <showinlist>T</showinlist>
+  <storevalue>T</storevalue>
+</entitycustomfield>

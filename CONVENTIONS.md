@@ -88,7 +88,7 @@ Archivos que no son JS: mismo prefijo, `gpv_<name>.<ext>`. Ejemplo: `gpv_authori
 | Lista | `customlist_gpv_<name>` | `customlist_gpv_line_status` |
 | Valor de lista | `val_gpv_<code>` (el código del glosario en minúsculas) | `val_gpv_pending` |
 | Rol | `customrole_gpv_<name>` | `customrole_gpv_slack_gateway` |
-| Archivo XML de SDF | Igual al ID del objeto | `src/Objects/customscript_gpv_slack_gateway_sl.xml` |
+| Archivo XML de SDF | Igual al ID del objeto | `src/Objects/Scripts/SL/customscript_gpv_slack_gateway_sl.xml` |
 
 - Archivo, script y deployment comparten nombre. Con una sola búsqueda se encuentra la pieza en el repo, en el File Cabinet y en la lista de scripts.
 - Los valores de lista se identifican en código por su scriptid, **nunca por internal ID**, porque el internal ID cambia entre sandbox y producción.
@@ -105,8 +105,12 @@ Gpo_Vallas_NS_to_Slack/
     Objects/                                  # XML de SDF, una subcarpeta por tipo de objeto
       Lists/                                  # customlist_*
       Records/                                # customrecord_* (con sus campos custrecord_*)
-      Fields/                                 # campos de registros nativos (custbody_*, custentity_*)
+      Fields/                                 # campos de registros nativos
+        Body/                                 # custbody_*
+        Entity/                               # custentity_*
       Scripts/                                # customscript_* (con sus deployments)
+        SL/                                   # Suitelets
+        SS/                                   # Scheduled Scripts
     FileCabinet/SuiteScripts/gpv_payment_authorization/
       lib/        # núcleo: lógica de negocio, sin dependencia del canal
       slack/      # cliente, verificación de firma, Block Kit, router de interacciones

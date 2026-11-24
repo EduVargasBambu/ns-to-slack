@@ -30,7 +30,7 @@ describe('buildProposalSummary', () => {
     ).toBe(
       [
         '*Concentrado de la junta del 23/11/2026*',
-        '5 facturas por autorizar.',
+        '5 facturas en el concentrado.',
         '',
         '*Totales*',
         '• MXN: $1,500,000.50',
@@ -67,6 +67,6 @@ describe('buildProposalSummary', () => {
         pendingByLevel: [{ name: 'Director', count: 1 }],
         authorizedCount: 0,
       }),
-    ).toContain('1 factura por autorizar.');
+    ).toContain('1 factura en el concentrado.');
   });
 });

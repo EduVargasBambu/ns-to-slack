@@ -19,7 +19,9 @@ define([
   currencyLib,
   proposalLib,
 ) => {
-  const { Proposal, ProposalLine, LineStatusList } = constants;
+  const { Proposal, ProposalLine, LineStatusList, Vendor, VendorPriorityList } = constants;
+  /** Currencies shown first, in this order; any other goes after them, alphabetically. */
+  const CURRENCY_ORDER = ['USD', 'MXN'];
 
   /**
    * @typedef {object} PendingLine
@@ -33,7 +35,37 @@ define([
    * @property {number} amount
    * @property {string} currency ISO code.
    * @property {string} dueDate
+   * @property {number} priorityRank 0 = Alto, 1 = Medio, 2 = Bajo, 3 = no priority.
    */
+
+  /**
+   * Bill order inside a group: vendor priority (Alto → Bajo, unclassified last), then USD before
+   * MXN, then amount high to low. Ties keep the search order (due date).
+   * @param {PendingLine[]} lines
+   * @returns {PendingLine[]} New sorted array.
+   */
+  const sortLines = (lines) => {
+    const currencyRank = (/** @type {string} */ code) => {
+      const i = CURRENCY_ORDER.indexOf(code);
+      return i === -1 ? CURRENCY_ORDER.length : i;
+    };
+    return [...lines].sort(
+      (a, b) =>
+        a.priorityRank - b.priorityRank ||
+        currencyRank(a.currency) - currencyRank(b.currency) ||
+        a.currency.localeCompare(b.currency) ||
+        b.amount - a.amount,
+    );
+  };
+
+  /** @returns {Record<string, number>} Priority value internal id -> rank. */
+  const getPriorityRanks = () =>
+    Object.fromEntries(
+      [VendorPriorityList.HIGH, VendorPriorityList.MEDIUM, VendorPriorityList.LOW].map((v, i) => [
+        listLib.getValueId(VendorPriorityList.ID, v),
+        i,
+      ]),
+    );
 
   /**
    * One group per proposal and level, oldest meeting first, then by level order.
@@ -64,6 +96,7 @@ define([
       .sort((a, b) => Number(a.proposalId) - Number(b.proposalId) || a.levelOrder - b.levelOrder)
       .map(({ levelOrder: _order, ...group }) => ({
         ...group,
+        lines: sortLines(group.lines),
         totals: proposalLib.sumByCurrency(group.lines),
       }));
   };
@@ -80,6 +113,9 @@ define([
       join: ProposalLine.PROPOSAL,
     });
     const billNumber = search.createColumn({ name: 'tranid', join: ProposalLine.VENDOR_BILL });
+    const priority = search.createColumn({ name: Vendor.PRIORITY, join: ProposalLine.VENDOR });
+    const ranks = getPriorityRanks();
+    const NO_PRIORITY = 3;
     /** @type {PendingLine[]} */
     const lines = [];
     search
@@ -98,6 +134,7 @@ define([
           ProposalLine.VENDOR_BILL,
           billNumber,
           ProposalLine.VENDOR,
+          priority,
           ProposalLine.AMOUNT,
           ProposalLine.CURRENCY,
           search.createColumn({ name: ProposalLine.DUE_DATE, sort: search.Sort.ASC }),
@@ -116,6 +153,7 @@ define([
           amount: Number(result.getValue(ProposalLine.AMOUNT)) || 0,
           currency: codes[String(result.getValue(ProposalLine.CURRENCY))] || '',
           dueDate: String(result.getValue(ProposalLine.DUE_DATE) || ''),
+          priorityRank: ranks[String(result.getValue(priority))] ?? NO_PRIORITY,
         });
         return true;
       });
@@ -172,7 +210,11 @@ define([
     });
     return [...groups.values()]
       .sort((a, b) => Number(a.proposalId) - Number(b.proposalId))
-      .map((group) => ({ ...group, totals: proposalLib.sumByCurrency(group.lines) }));
+      .map((group) => ({
+        ...group,
+        lines: sortLines(group.lines),
+        totals: proposalLib.sumByCurrency(group.lines),
+      }));
   };
 
   /**
@@ -193,5 +235,5 @@ define([
       ]),
     );
 
-  return { groupLines, groupByProposal, findForEmployee, findByIds, findAuthorized };
+  return { sortLines, groupLines, groupByProposal, findForEmployee, findByIds, findAuthorized };
 });

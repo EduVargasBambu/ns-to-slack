@@ -27,7 +27,7 @@ define([
 ) => {
   const TITLE = 'gpv_approval_center_sl';
   /** Units kept after the last line for the Slack notices and the answer. */
-  const RESERVED_USAGE = 250;
+  const RESERVED_USAGE = 350;
   const MAX_LINES = 500;
   /** Header the page sends: a cross-site form cannot set it, so it blocks CSRF. */
   const REQUEST_HEADER = 'X-GPV-Request';
@@ -133,7 +133,7 @@ define([
           ? approvalService.approve(options)
           : approvalService.discard({ ...options, reason });
       // Notices never fail the request: the approval is already saved.
-      notifier.notifyAfterAction(results);
+      notifier.notifyAfterAction(results, employeeId);
       sendJson(response, { ok: true, counts: countOutcomes(results) });
     } catch (e) {
       const err = /** @type {{ name?: string, message?: string }} */ (e);
