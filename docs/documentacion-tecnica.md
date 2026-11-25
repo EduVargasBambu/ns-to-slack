@@ -238,6 +238,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
    2. Marcar la casilla en el nivel 3 y poner como aprobador a un empleado de prueba sin acceso a NetSuite, con su Usuario de Slack.
    3. Correr el script del lunes y verificar que llega el DM con "Revisar y autorizar".
    4. Abrir el enlace en un navegador **sin sesión de NetSuite**; aprobar una factura y revisar que la bitácora la registre con canal "Enlace externo".
+      - Aprobar una factura en el nivel 3 por enlace y confirmar que el aprobador del nivel 4 recibe el DM con "Revisar y autorizar". Esto prueba que el token se firma dentro del Suitelet sin sesión; si el API Secret no está permitido ahí, el DM falla en silencio y solo aparece en el log del script.
    5. Desmarcar la casilla del nivel y recargar: debe salir el mensaje de enlace caducado.
    6. Cambiar a mano un dígito de `t=` en la URL: debe salir el mismo mensaje.
 
@@ -277,7 +278,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 - La búsqueda de pendientes definitiva aún no existe (la del sandbox es de prueba).
 - El gateway ejecuta como Administrador: crear un rol mínimo antes de PROD, o no desplegarlo hasta tener el Worker (ver 5.3).
 - Permisos mínimos de los roles de aprobadores y Tesorería para el Centro: por confirmar (ver 5.7).
-- **Por verificar en el sandbox (enlace externo):** que el borde de NetSuite deje al navegador mandar el encabezado propio `X-GPV-Token` en el dominio externo (antes rechazó con 405 algunos POST externos; si falla, el token tendría que ir en la URL o el cuerpo); y que `runtime.getCurrentScript().deploymentId` venga con valor en el deployment externo (de eso depende distinguir interno de externo).
+- **Verificado en el sandbox (25 nov, enlace externo):** el borde de NetSuite deja al navegador mandar el encabezado propio `X-GPV-Token` en el dominio externo (GET y POST), y `runtime.getCurrentScript().deploymentId` viene con valor en el deployment externo. Aprobar, descartar y cortar el acceso desmarcando la casilla funcionaron.
 - El deployment externo ejecuta como Administrador: crear un rol mínimo antes de PROD.
 - El prototipo `../../NS to Slack/MR_Notificaciones_Slack_P2P.js` tiene el bot token de Slack escrito en el código: **revocarlo** y rotarlo.
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).

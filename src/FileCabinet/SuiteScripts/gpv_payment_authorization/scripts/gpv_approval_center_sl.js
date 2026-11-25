@@ -132,7 +132,7 @@ define([
       employee = search.lookupFields({
         type: search.Type.EMPLOYEE,
         id: employeeId,
-        columns: ['isinactive', 'firstname', 'lastname'],
+        columns: ['isinactive', 'firstname', 'lastname', 'entityid'],
       });
     } catch {
       return reject(`empleado ${employeeId} no encontrado`);
@@ -143,7 +143,9 @@ define([
     if (!approvalLib.isExternalLinkEmployee(levelLib.getLevels(), employeeId)) {
       return reject(`empleado ${employeeId} sin nivel con enlace externo`);
     }
-    const employeeName = `${employee.firstname || ''} ${employee.lastname || ''}`.trim();
+    const employeeName =
+      `${employee.firstname || ''} ${employee.lastname || ''}`.trim() ||
+      String(employee.entityid || '');
     return { error: '', external, employeeId, employeeName };
   };
 

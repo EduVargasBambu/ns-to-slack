@@ -196,7 +196,7 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 ## 9. Preguntas frecuentes
 
 **¿Puedo aprobar desde Slack, sin abrir NetSuite?**
-Por ahora no. Slack te avisa y te lleva al Centro de Autorización; ahí apruebas. Aprobar con botones dentro de Slack está planeado para una siguiente etapa.
+Aún no hay botones que aprueben dentro de la propia Slack: Slack te avisa y te lleva al Centro de Autorización; ahí apruebas. Los CO-CEOs, que no tienen usuario de NetSuite, aprueban con el enlace de su mensaje directo. Los botones dentro de Slack están planeados para una siguiente etapa.
 
 **Me llegó un enlace y ya caducó, ¿qué hago?**
 Espera el mensaje del siguiente lunes: trae un enlace nuevo. Si es urgente, pide al administrador que genere el concentrado a mano para que se manden los avisos otra vez.

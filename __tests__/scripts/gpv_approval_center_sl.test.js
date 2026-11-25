@@ -179,6 +179,35 @@ describe('external deployment', () => {
   });
 });
 
+describe('external discard and name fallback', () => {
+  it('discards as the token employee through the external channel', () => {
+    json({
+      method: 'POST',
+      action: 'discard',
+      headers: { 'X-GPV-Token': VALID },
+      body: '{"lineIds":["5"],"reason":"x"}',
+    });
+    expect(approvalService.discard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lineIds: ['5'],
+        employeeId: '30',
+        channel: 'EXTERNAL_LINK',
+        reason: 'x',
+      }),
+    );
+  });
+
+  it('falls back to entityid when first and last name are empty', () => {
+    search.lookupFields.mockReturnValue({
+      isinactive: false,
+      firstname: '',
+      lastname: '',
+      entityid: 'CEO Uno',
+    });
+    expect(json({ action: 'pending', headers: { 'X-GPV-Token': VALID } }).userName).toBe('CEO Uno');
+  });
+});
+
 describe('missing deployment id', () => {
   it('rejects a caller without an employee session', () => {
     setDeployment(undefined);
