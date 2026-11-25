@@ -37,10 +37,21 @@ define([
    * @property {string} dueDate
    * @property {number} priorityRank 0 = Alto, 1 = Medio, 2 = Bajo, 3 = no priority.
    * @property {string} priority Vendor priority as the list shows it; '' when none.
+   * @property {string} billDate Bill transaction date, as NetSuite formats it.
+   * @property {string} memo Bill memo; '' when none.
+   * @property {string} subsidiary Bill subsidiary, short name (last segment); '' when none.
+   * @property {string} vendorDescription Vendor description; '' when none.
    */
 
   /**
-   * Bill order inside a group: vendor priority (Alto → Bajo, unclassified last), then USD before
+   * NetSuite returns hierarchical names ("Parent : Child"); only the last segment is shown.
+   * @param {string} name
+   * @returns {string}
+   */
+  const shortSubsidiaryName = (name) => name.split(':').pop()?.trim() ?? '';
+
+  /**
+   * Bill order inside a group: subsidiary (A-Z, none last), then vendor priority (Alto → Bajo, unclassified last), then USD before
    * MXN, then amount high to low. Ties keep the search order (due date).
    * @param {PendingLine[]} lines
    * @returns {PendingLine[]} New sorted array.
@@ -52,6 +63,8 @@ define([
     };
     return [...lines].sort(
       (a, b) =>
+        Number(!a.subsidiary) - Number(!b.subsidiary) ||
+        a.subsidiary.localeCompare(b.subsidiary, 'es') ||
         a.priorityRank - b.priorityRank ||
         currencyRank(a.currency) - currencyRank(b.currency) ||
         a.currency.localeCompare(b.currency) ||
@@ -115,6 +128,13 @@ define([
     });
     const billNumber = search.createColumn({ name: 'tranid', join: ProposalLine.VENDOR_BILL });
     const priority = search.createColumn({ name: Vendor.PRIORITY, join: ProposalLine.VENDOR });
+    const subsidiary = search.createColumn({ name: 'subsidiary', join: ProposalLine.VENDOR_BILL });
+    const billDate = search.createColumn({ name: 'trandate', join: ProposalLine.VENDOR_BILL });
+    const memo = search.createColumn({ name: 'memo', join: ProposalLine.VENDOR_BILL });
+    const vendorDescription = search.createColumn({
+      name: Vendor.DESCRIPTION,
+      join: ProposalLine.VENDOR,
+    });
     const ranks = getPriorityRanks();
     const NO_PRIORITY = 3;
     /** @type {PendingLine[]} */
@@ -136,6 +156,10 @@ define([
           billNumber,
           ProposalLine.VENDOR,
           priority,
+          vendorDescription,
+          subsidiary,
+          billDate,
+          memo,
           ProposalLine.AMOUNT,
           ProposalLine.CURRENCY,
           search.createColumn({ name: ProposalLine.DUE_DATE, sort: search.Sort.ASC }),
@@ -156,6 +180,10 @@ define([
           dueDate: String(result.getValue(ProposalLine.DUE_DATE) || ''),
           priorityRank: ranks[String(result.getValue(priority))] ?? NO_PRIORITY,
           priority: String(result.getText(priority) || ''),
+          billDate: String(result.getValue(billDate) || ''),
+          memo: String(result.getValue(memo) || ''),
+          subsidiary: shortSubsidiaryName(String(result.getText(subsidiary) || '')),
+          vendorDescription: String(result.getValue(vendorDescription) || ''),
         });
         return true;
       });
@@ -237,5 +265,13 @@ define([
       ]),
     );
 
-  return { sortLines, groupLines, groupByProposal, findForEmployee, findByIds, findAuthorized };
+  return {
+    shortSubsidiaryName,
+    sortLines,
+    groupLines,
+    groupByProposal,
+    findForEmployee,
+    findByIds,
+    findAuthorized,
+  };
 });

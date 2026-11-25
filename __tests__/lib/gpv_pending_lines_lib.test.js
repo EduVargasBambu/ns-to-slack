@@ -5,7 +5,7 @@ jest.mock('N/error', () => ({
   create: ({ name, message }) => Object.assign(new Error(message), { name }),
 }));
 
-const { sortLines, groupLines, groupByProposal } = pending;
+const { sortLines, groupLines, groupByProposal, shortSubsidiaryName } = pending;
 
 const LEVELS = [
   { id: '11', name: 'Director', order: 1, approvalField: 'a', approverId: '100', substituteId: '' },
@@ -24,6 +24,10 @@ const line = (lineId, proposalId, levelId, amount, currency) => ({
   dueDate: '30/11/2026',
   priorityRank: 3,
   priority: '',
+  billDate: '01/11/2026',
+  memo: '',
+  subsidiary: 'Ecovallas',
+  vendorDescription: '',
 });
 
 describe('groupLines', () => {
@@ -75,10 +79,32 @@ describe('groupByProposal', () => {
   });
 });
 
+describe('shortSubsidiaryName', () => {
+  it('keeps only the last segment of a hierarchical name', () => {
+    expect(shortSubsidiaryName('Grupo Vallas : Ecovallas')).toBe('Ecovallas');
+    expect(shortSubsidiaryName('Ecovallas')).toBe('Ecovallas');
+    expect(shortSubsidiaryName('')).toBe('');
+  });
+});
+
 describe('sortLines', () => {
-  const l = (lineId, priorityRank, currency, amount) => ({
+  const l = (lineId, priorityRank, currency, amount, subsidiary = 'Ecovallas') => ({
     ...line(lineId, '10', '11', amount, currency),
     priorityRank,
+    subsidiary,
+  });
+
+  it('orders by subsidiary first, alphabetically', () => {
+    const sorted = sortLines([
+      l('eco-alto', 0, 'USD', 1, 'Ecovallas'),
+      l('bambu-bajo', 2, 'USD', 1, 'Bambú'),
+    ]);
+    expect(sorted.map((x) => x.subsidiary)).toEqual(['Bambú', 'Ecovallas']);
+  });
+
+  it('puts lines without subsidiary last', () => {
+    const sorted = sortLines([l('none', 0, 'USD', 1, ''), l('eco', 2, 'USD', 1, 'Ecovallas')]);
+    expect(sorted.map((x) => x.subsidiary)).toEqual(['Ecovallas', '']);
   });
 
   it('orders by priority, then USD before MXN, then amount high to low', () => {

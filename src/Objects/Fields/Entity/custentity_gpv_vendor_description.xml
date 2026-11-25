@@ -1,0 +1,14 @@
+<entitycustomfield scriptid="custentity_gpv_vendor_description">
+  <accesslevel>2</accesslevel>
+  <appliestovendor>T</appliestovendor>
+  <description>Descripción breve de qué hace el proveedor. Se muestra en el Centro de Autorización.</description>
+  <displaytype>NORMAL</displaytype>
+  <fieldtype>TEXT</fieldtype>
+  <help>Descripción breve de qué hace el proveedor. Se muestra en el Centro de Autorización debajo de su nombre.</help>
+  <isparent>F</isparent>
+  <ismandatory>F</ismandatory>
+  <label>Descripción de proveedor</label>
+  <searchlevel>2</searchlevel>
+  <showinlist>F</showinlist>
+  <storevalue>T</storevalue>
+</entitycustomfield>

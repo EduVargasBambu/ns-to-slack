@@ -76,6 +76,8 @@ define([], () => {
   const Vendor = {
     /** Payment priority (customlist_gpv_vendor_priority); orders bills in the Approval Center. */
     PRIORITY: 'custentity_gpv_vendor_priority',
+    /** Short free-text description of what the vendor does; shown under its name. */
+    DESCRIPTION: 'custentity_gpv_vendor_description',
   };
 
   const Employee = {
