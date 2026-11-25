@@ -87,6 +87,8 @@ define([], () => {
   const ApprovalCenter = {
     SCRIPT: 'customscript_gpv_approval_center_sl',
     DEPLOYMENT: 'customdeploy_gpv_approval_center_sl',
+    /** Available without login; the employee comes from a signed link token. */
+    EXTERNAL_DEPLOYMENT: 'customdeploy_gpv_approval_center_ext',
   };
 
   /**
