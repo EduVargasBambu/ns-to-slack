@@ -1,6 +1,13 @@
+import search from 'N/search';
+import configLib from '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/lib/gpv_config_lib';
 import pending from '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/lib/gpv_pending_lines_lib';
 
-jest.mock('N/search', () => ({}));
+jest.mock('N/search', () => ({ load: jest.fn() }));
+jest.mock(
+  '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/lib/gpv_config_lib',
+  () => ({ getConfig: jest.fn() }),
+);
+global.log = { error: jest.fn() };
 jest.mock('N/error', () => ({
   create: ({ name, message }) => Object.assign(new Error(message), { name }),
 }));
@@ -132,5 +139,92 @@ describe('sortLines', () => {
     const input = [l('a', 3, 'MXN', 10), l('b', 3, 'MXN', 10)];
     expect(sortLines(input).map((x) => x.lineId)).toEqual(['a', 'b']);
     expect(sortLines(input)).not.toBe(input);
+  });
+});
+
+describe('attachDetails', () => {
+  const COLUMNS = [{ label: 'Serie', name: 'custbody_serie' }, { name: 'terms' }];
+  const row = (id, values) => ({
+    id,
+    getText: (c) => values[c.label || c.name]?.text,
+    getValue: (c) => values[c.label || c.name]?.value,
+  });
+  /** @param {object[]} rows */
+  const mockSearch = (rows) => {
+    const loaded = {
+      columns: COLUMNS,
+      filterExpression: [],
+      run: () => ({ each: (fn) => rows.every(fn) }),
+    };
+    search.load.mockReturnValue(loaded);
+    return loaded;
+  };
+  const billRows = [
+    row('7', { Serie: { value: 'A' }, terms: { text: '30 días', value: '3' } }),
+    row('8', { Serie: { value: 'B' }, terms: { value: '' } }),
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    configLib.getConfig.mockReturnValue({ pendingSearch: 'customsearch_x' });
+  });
+
+  it('applies the saved search columns to each line by bill', () => {
+    mockSearch(billRows);
+    const groups = [{ lines: [{ ...line('1', '10', '11', 1, 'MXN'), billId: '7' }] }];
+    expect(pending.attachDetails(groups)).toEqual(['Serie', 'terms']);
+    expect(groups[0].lines[0].details).toEqual(['A', '30 días']);
+    expect(search.load).toHaveBeenCalledWith({ id: 'customsearch_x' });
+  });
+
+  it('replaces the saved search filters with the shown bills', () => {
+    const loaded = mockSearch(billRows);
+    pending.attachDetails([
+      { lines: [{ billId: '7' }, { billId: '8' }] },
+      { lines: [{ billId: '7' }] },
+    ]);
+    expect(loaded.filterExpression).toEqual([
+      ['mainline', 'is', 'T'],
+      'AND',
+      ['internalid', 'anyof', ['7', '8']],
+    ]);
+  });
+
+  it('gives the same details to two lines of the same bill', () => {
+    mockSearch(billRows);
+    const groups = [{ lines: [{ billId: '8' }] }, { lines: [{ billId: '8' }] }];
+    pending.attachDetails(groups);
+    expect(groups[0].lines[0].details).toEqual(['B', '']);
+    expect(groups[1].lines[0].details).toEqual(['B', '']);
+  });
+
+  it('leaves lines without details when the search does not return their bill', () => {
+    mockSearch(billRows);
+    const groups = [{ lines: [{ billId: '99' }] }];
+    expect(pending.attachDetails(groups)).toEqual(['Serie', 'terms']);
+    expect(groups[0].lines[0]).not.toHaveProperty('details');
+  });
+
+  it('returns no details when the saved search is missing or fails', () => {
+    configLib.getConfig.mockReturnValue({ pendingSearch: '' });
+    expect(pending.attachDetails([{ lines: [{ billId: '7' }] }])).toEqual([]);
+    expect(search.load).not.toHaveBeenCalled();
+
+    configLib.getConfig.mockReturnValue({ pendingSearch: 'customsearch_x' });
+    search.load.mockImplementation(() => {
+      throw new Error('boom');
+    });
+    expect(pending.attachDetails([{ lines: [{ billId: '7' }] }])).toEqual([]);
+    expect(global.log.error).toHaveBeenCalledWith('gpv_pending_lines_lib', expect.any(String));
+
+    configLib.getConfig.mockImplementation(() => {
+      throw new Error('no config');
+    });
+    expect(pending.attachDetails([{ lines: [{ billId: '7' }] }])).toEqual([]);
+  });
+
+  it('does not search when there are no lines', () => {
+    expect(pending.attachDetails([{ lines: [] }])).toEqual([]);
+    expect(search.load).not.toHaveBeenCalled();
   });
 });

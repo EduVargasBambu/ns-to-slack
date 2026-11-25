@@ -26,6 +26,7 @@ jest.mock(
   () => ({
     findForEmployee: jest.fn(() => []),
     findAuthorized: jest.fn(() => []),
+    attachDetails: jest.fn(() => ['Serie']),
   }),
 );
 jest.mock(
@@ -149,6 +150,7 @@ describe('external deployment', () => {
       ok: true,
       userName: 'Ana Pérez',
       groups: [],
+      detailColumns: ['Serie'],
     });
     expect(pendingLines.findForEmployee).toHaveBeenCalledWith('30');
   });
@@ -235,6 +237,13 @@ describe('internal deployment', () => {
     json({ action: 'pending', headers: { 'X-GPV-Token': VALID } });
     expect(pendingLines.findForEmployee).toHaveBeenCalledWith('10');
     expect(linkToken.verify).not.toHaveBeenCalled();
+  });
+
+  it('serves detail columns with pending and authorized groups', () => {
+    expect(json({ action: 'pending' }).detailColumns).toEqual(['Serie']);
+    expect(json({ action: 'authorized' })).toEqual(
+      expect.objectContaining({ ok: true, detailColumns: ['Serie'] }),
+    );
   });
 
   it('still requires X-GPV-Request on POST', () => {

@@ -165,19 +165,23 @@ define([
     }
 
     if (request.method === 'GET' && action === 'pending') {
+      const groups = pendingLines.findForEmployee(employeeId);
       sendJson(response, {
         ok: true,
         userName: employeeName,
-        groups: pendingLines.findForEmployee(employeeId),
+        groups,
+        detailColumns: pendingLines.attachDetails(groups),
       });
       return;
     }
     // Read-only treasury view: anyone with access to the internal Center may see it.
     if (request.method === 'GET' && action === 'authorized' && !external) {
+      const groups = pendingLines.findAuthorized();
       sendJson(response, {
         ok: true,
         userName: employeeName,
-        groups: pendingLines.findAuthorized(),
+        groups,
+        detailColumns: pendingLines.attachDetails(groups),
       });
       return;
     }

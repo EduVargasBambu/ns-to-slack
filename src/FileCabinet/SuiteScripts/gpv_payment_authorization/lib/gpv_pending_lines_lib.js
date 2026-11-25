@@ -11,6 +11,7 @@ define([
   './gpv_approval_level_lib',
   './gpv_currency_lib',
   './gpv_proposal_lib',
+  './gpv_config_lib',
 ], (
   /** @type {typeof import('N/search')} */ search,
   constants,
@@ -18,6 +19,7 @@ define([
   levelLib,
   currencyLib,
   proposalLib,
+  configLib,
 ) => {
   const { Proposal, ProposalLine, LineStatusList, Vendor, VendorPriorityList } = constants;
   /** Currencies shown first, in this order; any other goes after them, alphabetically. */
@@ -41,6 +43,7 @@ define([
    * @property {string} memo Bill memo; '' when none.
    * @property {string} subsidiary Bill subsidiary, short name (last segment); '' when none.
    * @property {string} vendorDescription Vendor description; '' when none.
+   * @property {string[]} [details] Saved search values for the bill, same order as the columns.
    */
 
   /**
@@ -265,7 +268,48 @@ define([
       ]),
     );
 
+  /**
+   * Adds the client's saved search columns (the ones the Monday CSV uses) to each line, by bill.
+   * Never throws: without the search or on failure the Center just shows no extra details.
+   * @param {{ lines: PendingLine[] }[]} groups
+   * @returns {string[]} Column labels, in order.
+   */
+  const attachDetails = (groups) => {
+    const lines = groups.flatMap((group) => group.lines);
+    if (!lines.length) return [];
+    try {
+      const searchId = configLib.getConfig().pendingSearch;
+      if (!searchId) return [];
+      const bills = search.load({ id: searchId });
+      const columns = /** @type {import('N/search').Column[]} */ (bills.columns);
+      // Only the client's columns; its filters are replaced with the bills on screen.
+      bills.filterExpression = [
+        ['mainline', 'is', 'T'],
+        'AND',
+        ['internalid', 'anyof', [...new Set(lines.map((line) => line.billId))]],
+      ];
+      /** @type {Map<string, string[]>} */
+      const byBill = new Map();
+      bills.run().each((result) => {
+        byBill.set(
+          String(result.id),
+          columns.map((column) => String(result.getText(column) || result.getValue(column) || '')),
+        );
+        return true;
+      });
+      lines.forEach((line) => {
+        const details = byBill.get(line.billId);
+        if (details) line.details = details;
+      });
+      return columns.map((column) => column.label || column.name);
+    } catch (e) {
+      log.error('gpv_pending_lines_lib', `No se pudo leer el detalle de la búsqueda: ${e}`);
+      return [];
+    }
+  };
+
   return {
+    attachDetails,
     shortSubsidiaryName,
     sortLines,
     groupLines,
