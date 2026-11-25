@@ -7,10 +7,16 @@ import notifier from '../../src/FileCabinet/SuiteScripts/gpv_payment_authorizati
 jest.mock('N/url', () => ({
   HostType: { APPLICATION: 'APPLICATION' },
   resolveDomain: () => '1234.app.netsuite.com',
-  resolveScript: ({ params }) =>
-    `/app/site/hosting/scriptlet.nl?script=9&deploy=1${params ? `&view=${params.view}` : ''}`,
+  resolveScript: ({ params, returnExternalUrl }) =>
+    returnExternalUrl
+      ? 'https://1234.extforms.netsuitesuiteapp.com/app/site/hosting/scriptlet.nl?script=9&deploy=2&compid=1234&ns-at=X'
+      : `/app/site/hosting/scriptlet.nl?script=9&deploy=1${params ? `&view=${params.view}` : ''}`,
 }));
 jest.mock('N/search', () => ({ Type: { EMPLOYEE: 'employee' }, lookupFields: jest.fn() }));
+jest.mock(
+  '../../src/FileCabinet/SuiteScripts/gpv_payment_authorization/lib/gpv_link_token_lib',
+  () => ({ create: ({ employeeId }) => `TOKEN-${employeeId}` }),
+);
 jest.mock('N/error', () => ({
   create: ({ name, message }) => Object.assign(new Error(message), { name }),
 }));
@@ -24,7 +30,7 @@ jest.mock(
         order: 1,
         approvalField: 'a',
         approverId: '100',
-        substituteId: '',
+        substituteId: '101',
       },
       { id: '12', name: 'CFO', order: 2, approvalField: 'b', approverId: '100', substituteId: '' },
       {
@@ -32,8 +38,9 @@ jest.mock(
         name: 'CEO 1',
         order: 3,
         approvalField: 'c',
-        approverId: '300',
-        substituteId: '',
+        approverId: '30',
+        substituteId: '31',
+        externalLink: true,
       },
       {
         id: '14',
@@ -63,11 +70,12 @@ jest.mock(
 
 global.log = { audit: jest.fn(), error: jest.fn() };
 
-const SLACK_IDS = { 100: 'U100', 300: '', 400: 'U400' };
+const SLACK_IDS = {};
 const GROUP = { meetingDate: '23/11/2026', levelName: 'CFO', lines: [1], totals: { MXN: 10 } };
 
 beforeEach(() => {
   jest.clearAllMocks();
+  Object.assign(SLACK_IDS, { 100: 'U100', 30: 'U30', 31: 'U31', 101: 'U101', 400: 'U400' });
   search.lookupFields.mockImplementation(({ id }) => ({
     custentity_gpv_slack_user: SLACK_IDS[id],
   }));
@@ -88,12 +96,31 @@ describe('notifyLevels', () => {
   });
 
   it('skips approvers without Slack user and keeps going when one DM fails', () => {
+    SLACK_IDS[31] = '';
     slackClient.call.mockImplementationOnce(() => {
       throw new Error('channel_not_found');
     });
-    expect(notifier.notifyLevels(['11', '13', '14'])).toBe(1);
-    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100', 'U400']);
+    expect(notifier.notifyLevels(['11', '13', '14'])).toBe(2);
+    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100', 'U30', 'U400']);
     expect(global.log.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends external-link approver and substitute a signed link to the external center', () => {
+    expect(notifier.notifyLevels(['13'])).toBe(2);
+    const calls = slackClient.call.mock.calls.map(([, p]) => p);
+    expect(calls.map((p) => p.channel)).toEqual(['U30', 'U31']);
+    ['30', '31'].forEach((id, i) => {
+      const button = calls[i].blocks[1].elements[0];
+      expect(button.url.startsWith('https://1234.extforms.netsuitesuiteapp.com/')).toBe(true);
+      expect(button.url.endsWith(`&t=TOKEN-${id}`)).toBe(true);
+      expect(button.text.text).toBe('Revisar y autorizar');
+    });
+  });
+
+  it('does not notify the substitute of a level without external link', () => {
+    notifier.notifyLevels(['11']);
+    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100']);
+    expect(slackClient.call.mock.calls[0][1].blocks[1].elements[0].url).not.toContain('&t=');
   });
 
   it('sends nothing when the approver has nothing waiting', () => {
@@ -105,8 +132,9 @@ describe('notifyLevels', () => {
 
 describe('notifyAllApprovers', () => {
   it('checks every level, once per approver, and skips those without Slack user', () => {
-    expect(notifier.notifyAllApprovers()).toBe(2);
-    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100', 'U400']);
+    SLACK_IDS[31] = '';
+    expect(notifier.notifyAllApprovers()).toBe(3);
+    expect(slackClient.call.mock.calls.map(([, p]) => p.channel)).toEqual(['U100', 'U30', 'U400']);
   });
 
   it('sends nothing to an approver with nothing pending', () => {

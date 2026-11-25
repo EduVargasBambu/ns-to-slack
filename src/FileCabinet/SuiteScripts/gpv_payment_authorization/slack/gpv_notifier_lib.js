@@ -14,6 +14,7 @@ define([
   '../lib/gpv_approval_level_lib',
   '../lib/gpv_pending_lines_lib',
   '../lib/gpv_approval_lib',
+  '../lib/gpv_link_token_lib',
   './gpv_slack_client_lib',
   './gpv_notification_message_lib',
 ], (
@@ -24,6 +25,7 @@ define([
   levelLib,
   pendingLines,
   approvalLib,
+  linkToken,
   slackClient,
   messages,
 ) => {
@@ -44,6 +46,14 @@ define([
       params,
     })}`;
 
+  /** Absolute URL of the external deployment (no NetSuite login), already a full URL. */
+  const getExternalUrl = () =>
+    url.resolveScript({
+      scriptId: ApprovalCenter.SCRIPT,
+      deploymentId: ApprovalCenter.EXTERNAL_DEPLOYMENT,
+      returnExternalUrl: true,
+    });
+
   /** @param {string} employeeId */
   const getSlackUserId = (employeeId) => {
     const fields = search.lookupFields({
@@ -56,7 +66,8 @@ define([
 
   /**
    * DMs the approver of each level once, with everything waiting for them.
-   * shortcut: substitutes are not notified; add them if a level's approver is often away.
+   * Levels approved by external link also notify the substitute (no NetSuite session to rely on).
+   * shortcut: substitutes of internal levels are not notified; add them if the approver is often away.
    * @param {string[]} levelIds Levels that just got bills.
    * @returns {number} DMs sent.
    */
@@ -69,7 +80,7 @@ define([
       ...new Set(
         levels
           .filter((l) => wanted.has(l.id))
-          .map((l) => l.approverId)
+          .flatMap((l) => [l.approverId, l.externalLink ? l.substituteId : ''])
           .filter(Boolean),
       ),
     ];
@@ -84,7 +95,14 @@ define([
           log.audit(TITLE, `El empleado ${employeeId} no tiene Usuario de Slack; no se le avisó.`);
           return;
         }
-        const dm = messages.buildApproverDm(pendingLines.findForEmployee(employeeId), centerUrl);
+        const external = approvalLib.isExternalLinkEmployee(levels, employeeId);
+        const dm = messages.buildApproverDm(
+          pendingLines.findForEmployee(employeeId),
+          external
+            ? `${getExternalUrl()}&t=${encodeURIComponent(linkToken.create({ employeeId }))}`
+            : centerUrl,
+          external ? 'Revisar y autorizar' : undefined,
+        );
         if (!dm) return;
         slackClient.call('chat.postMessage', { channel: slackUser, ...dm });
         sent += 1;

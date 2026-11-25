@@ -702,7 +702,11 @@
         let linesById = new Map();
         let busy = false;
         /** Treasury view: authorized bills still to pay, read-only. */
-        const readOnly = new URLSearchParams(window.location.search).get('view') === 'authorized';
+        const params = new URLSearchParams(window.location.search);
+        /** External-link approvers (no NetSuite login) arrive with a signed token (?t=). */
+        const token = params.get('t');
+        const readOnly = !token && params.get('view') === 'authorized';
+        const tokenHeaders = token ? { 'X-GPV-Token': token } : {};
 
         /** Same currency order as the server: USD, MXN, then any other alphabetically. */
         const CURRENCY_ORDER = ['USD', 'MXN'];
@@ -715,6 +719,11 @@
         const url = (action) => {
           const u = new URL(window.location.href);
           u.searchParams.set('action', action);
+          if (token) {
+            // The token travels only in the X-GPV-Token header.
+            u.searchParams.delete('t');
+            u.searchParams.delete('view');
+          }
           return u.toString();
         };
 
@@ -790,12 +799,14 @@
         };
 
         const renderLine = (line) => {
-          const billLink = el('a', {
-            href: `/app/accounting/transactions/vendbill.nl?id=${encodeURIComponent(line.billId)}`,
-            target: '_blank',
-            rel: 'noopener',
-            text: line.billNumber || 'Ver factura',
-          });
+          const billLink = token
+            ? el('span', { text: line.billNumber || 'Factura' })
+            : el('a', {
+                href: `/app/accounting/transactions/vendbill.nl?id=${encodeURIComponent(line.billId)}`,
+                target: '_blank',
+                rel: 'noopener',
+                text: line.billNumber || 'Ver factura',
+              });
           const cells = [
             el('td', { class: 'vendor' }, [
               document.createTextNode(line.vendor || 'Proveedor'),
@@ -930,6 +941,7 @@
         const load = async () => {
           const res = await fetch(url(readOnly ? 'authorized' : 'pending'), {
             credentials: 'same-origin',
+            headers: tokenHeaders,
           });
           const data = await res.json();
           if (!data.ok) throw new Error(data.error || 'No se pudieron cargar las facturas.');
@@ -997,7 +1009,11 @@
             const res = await fetch(url(action), {
               method: 'POST',
               credentials: 'same-origin',
-              headers: { 'Content-Type': 'application/json', 'X-GPV-Request': '1' },
+              headers: {
+                'Content-Type': 'application/json',
+                'X-GPV-Request': '1',
+                ...tokenHeaders,
+              },
               body: JSON.stringify({ lineIds, reason }),
             });
             const data = await res.json();

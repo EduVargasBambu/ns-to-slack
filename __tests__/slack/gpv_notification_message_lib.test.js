@@ -33,6 +33,16 @@ describe('buildApproverDm', () => {
     { meetingDate: '23/11/2026', levelName: 'CFO', lines: [4], totals: { MXN: 0.2 } },
   ];
 
+  it('uses a custom button text when given', () => {
+    const dm = buildApproverDm(groups, URL, 'Revisar y autorizar');
+    expect(dm.blocks[1].elements[0]).toEqual(
+      expect.objectContaining({
+        url: URL,
+        text: { type: 'plain_text', text: 'Revisar y autorizar' },
+      }),
+    );
+  });
+
   it('summarizes every group and links to the Approval Center', () => {
     const dm = buildApproverDm(groups, URL);
     expect(dm.text).toBe('Tienes 4 facturas por autorizar');

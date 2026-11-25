@@ -76,9 +76,10 @@ define(['./gpv_proposal_message_lib'], (proposalMessage) => {
    * @param {{ meetingDate: string, levelName: string, lines: unknown[], totals: Record<string, number> }[]} groups
    *   Same groups the Approval Center shows for this employee.
    * @param {string} centerUrl
+   * @param {string} [buttonText]
    * @returns {{ text: string, blocks: object[] }|null} null when nothing is waiting.
    */
-  const buildApproverDm = (groups, centerUrl) => {
+  const buildApproverDm = (groups, centerUrl, buttonText = 'Ver en NetSuite') => {
     const count = groups.reduce((sum, g) => sum + g.lines.length, 0);
     if (!count) return null;
     const title = `Tienes ${count} ${count === 1 ? 'factura' : 'facturas'} por autorizar`;
@@ -89,7 +90,7 @@ define(['./gpv_proposal_message_lib'], (proposalMessage) => {
       ),
       `Total: ${formatTotals(mergeTotals(groups.map((g) => g.totals)))}`,
     ].join('\n');
-    return withButton(title, detail, 'Ver en NetSuite', centerUrl, 'gpv_open_center');
+    return withButton(title, detail, buttonText, centerUrl, 'gpv_open_center');
   };
 
   /**
