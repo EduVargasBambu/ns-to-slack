@@ -135,6 +135,7 @@ define([], () => {
     ID: 'customlist_gpv_channel',
     SLACK: 'val_gpv_slack',
     NETSUITE: 'val_gpv_netsuite',
+    EXTERNAL_LINK: 'val_gpv_external_link',
   };
 
   return {

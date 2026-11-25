@@ -13,5 +13,9 @@
       <isinactive>F</isinactive>
       <value>NetSuite</value>
     </customvalue>
+    <customvalue scriptid="val_gpv_external_link">
+      <isinactive>F</isinactive>
+      <value>Enlace externo</value>
+    </customvalue>
   </customvalues>
 </customlist>

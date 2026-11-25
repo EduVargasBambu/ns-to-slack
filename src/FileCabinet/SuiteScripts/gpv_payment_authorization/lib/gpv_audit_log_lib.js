@@ -22,7 +22,11 @@ define(['N/record', 'N/search', 'N/error', './gpv_constants_lib', './gpv_list_li
   });
 
   /** @enum {string} */
-  const AuditChannel = Object.freeze({ SLACK: 'SLACK', NETSUITE: 'NETSUITE' });
+  const AuditChannel = Object.freeze({
+    SLACK: 'SLACK',
+    NETSUITE: 'NETSUITE',
+    EXTERNAL_LINK: 'EXTERNAL_LINK',
+  });
 
   /**
    * @typedef {object} AuditEntry
