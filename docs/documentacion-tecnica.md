@@ -54,6 +54,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 - `custentity_gpv_slack_user`: ID de Slack del empleado (liga empleado NS ↔ usuario Slack).
 - `custentity_gpv_vendor_priority` ("Prioridad de Proveedor", en el proveedor): lista `customlist_gpv_vendor_priority` con Alto, Medio y Bajo (`val_gpv_high/medium/low`). Opcional; ordena las facturas en el Centro (decidido 24 nov).
+- `custentity_gpv_vendor_description` ("Descripción de proveedor", en el proveedor): texto libre que el Centro muestra bajo el nombre; vacío, no muestra renglón. Llenarlo es tarea del negocio (25 nov).
 - Listas: estado de línea, estado de concentrado, acción de bitácora, canal (incluye "Enlace externo"), prioridad de proveedor.
 
 ### Scripts
@@ -110,6 +111,12 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - Errores: solo `GPV_INVALID_REQUEST` y `GPV_DISCARD_REASON_REQUIRED` se muestran tal cual; lo demás se registra en el log y el usuario ve un mensaje genérico.
 - Lotes: ~25-30 líneas por clic; el resto vuelve como "faltan N, da clic otra vez" (`NOT_PROCESSED`).
 - **Vista de Tesorería** (`?view=authorized`): la misma página en solo lectura, sin casillas ni botones. Llama a `GET ?action=authorized` (`findAuthorized`): líneas Autorizadas cuya factura sigue abierta (`VendBill:A`; con pago parcial sigue abierta, pagada completa sale sola), agrupadas por concentrado, con enlace a cada factura. Cualquiera con acceso al Centro puede abrirla (decidido 24 nov).
+- **Datos de la factura** (25 nov): cada factura muestra proveedor + prioridad + descripción del proveedor, folio (`tranid`, ya incluye la serie), fecha de la factura, vencimiento, memo (nota del encabezado) y monto. Los datos vienen de `gpv_pending_lines_lib` (subsidiaria, memo, fechas, descripción).
+- **Orden** (`sortLines`, actualiza el de arriba): dentro de cada concentrado/nivel, subsidiaria (alfabético por el último segmento del nombre jerárquico; sin subsidiaria al final) → moneda (USD, MXN, otras) → prioridad → monto. En la vista de Tesorería: concentrado → subsidiaria → moneda.
+- **Tarjetas:** a ≤900 px (celulares y tabletas verticales) la tabla se cambia por tarjetas.
+- **"Ver detalle"** (`attachDetails`): por factura, todas las columnas de la búsqueda de pendientes configurada en Configuración GPV (la misma del CSV del lunes), filtrada a las facturas mostradas; omite los valores iguales a los ya visibles (proveedor, folio, fecha de factura, vencimiento). Sin búsqueda (no configurada, borrada o sin permiso) el Centro funciona sin detalle y registra el error en el log; nunca lanza.
+- **"Vista completa":** solo en escritorio (≥1024 px); una columna por columna de la búsqueda; se recuerda en el navegador (`localStorage`).
+- **Una sola búsqueda para todos**, incluido el enlace externo de los CEOs: quien tenga un enlace válido ve esas columnas. Regla: nada sensible en la búsqueda (datos bancarios, notas internas, fórmulas con enlaces). Compartir la búsqueda (Audiencia) con los roles que usan el Centro. Evitar columnas de resumen (agrupadas/total): el detalle podría no aparecer.
 - Página v1 en HTML + JS sin framework. Si crece, se puede cambiar por la SPA (Preact) sin tocar el API.
 
 ### 4.6 Avisos en Slack
@@ -193,6 +200,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 2. **No** filtrar por las casillas de aprobación ni por el estado de autorización: la app agrega sus propios filtros (ver 4.1).
 3. Columnas: las que CXP quiera ver en el CSV. Recomendado agregar las 4 casillas de aprobación, moneda e importe.
 4. Anotar su ID (en el sandbox: `customsearch_gpv_slack_pending_bills`).
+5. **Es también el "Ver detalle" del Centro** (4.5): todas sus columnas salen ahí, para todos, incluidos los CEOs por enlace externo. Nada sensible (bancos, notas internas, fórmulas con enlaces), sin columnas de resumen (agrupadas/total), y **compartirla** (Audiencia) con los roles que usan el Centro; si un rol no la ve, su Centro queda sin detalle.
 
 ### 5.6 Configuración y niveles
 
@@ -217,6 +225,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 
 1. **Usuario de Slack** en el registro de empleado de cada aprobador: en Slack, abrir su perfil → ⋮ → **Copiar ID de miembro** (`U0…`). Sin este dato no recibe DMs (se registra en el log).
 2. **Prioridad de Proveedor** (opcional): capturar Alto, Medio o Bajo en los proveedores que CXP quiera ordenar primero.
+   **Descripción de proveedor** (opcional): a qué se dedica o qué suministra; se ve bajo el nombre en el Centro. La captura es del negocio.
 3. **Permisos de los roles** de aprobadores y Tesorería **(a confirmar)**. El Centro ejecuta con el rol del usuario y los registros de la app exigen permiso por registro, así que el rol necesita al menos:
    - Factura de proveedor: **Editar** (aprobadores; la app marca las casillas y el estado).
    - Proveedor y Empleado: **Ver**.
@@ -233,7 +242,13 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
    - Resumen en el canal de CXP y CSV en `SuiteScripts/gpv_payment_authorization/proposals/`.
    - DM a cada aprobador con pendientes; en el log, `DMs a aprobadores: N`.
 4. Con el usuario de cada aprobador: abrir el Centro desde el DM, aprobar una factura y confirmar el DM de confirmación, el DM al siguiente nivel y, al final, el aviso a Tesorería. Descartar una y confirmar el aviso a CXP.
-5. **Enlace externo** (la hace el usuario en el sandbox):
+5. **Datos de la factura y detalle** (la hace el usuario en el sandbox):
+   1. Desplegar.
+   2. Capturar la descripción en dos proveedores.
+   3. Compartir la búsqueda de pendientes con los roles del Centro.
+   4. Abrir el Centro en el celular y en escritorio: orden por subsidiaria, datos nuevos, "Ver detalle" y "Vista completa".
+   5. Abrir un enlace externo y confirmar lo mismo, sin enlace a la factura.
+6. **Enlace externo** (la hace el usuario en el sandbox):
    1. Desplegar el proyecto y crear el secreto `custsecret_gpv_link_key` (5.4).
    2. Marcar la casilla en el nivel 3 y poner como aprobador a un empleado de prueba sin acceso a NetSuite, con su Usuario de Slack.
    3. Correr el script del lunes y verificar que llega el DM con "Revisar y autorizar".
@@ -268,6 +283,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 | 23 nov 2026 | Slack no puede llamar directo a NetSuite (405 por User-Agent). Vía principal: DM con enlace al Centro de Autorización interno; botones nativos después, con un Cloudflare Worker |
 | 24 nov 2026 | La aprobación del Director (nivel 1, fijo en código) es permanente: no se limpia al descartar, vencer ni por huecos |
 | 24 nov 2026 | Los CEOs (sin usuario de NetSuite) aprueban por enlace externo firmado (token HMAC de 7 días, sin estado) en un segundo deployment del Centro; se activa con una casilla por nivel. Ver 4.7 |
+| 25 nov 2026 | El Centro muestra más datos de la factura, ordena por subsidiaria y ofrece "Ver detalle" y "Vista completa" con las columnas de la búsqueda de pendientes (una sola para todos, también CEOs por enlace: nada sensible en ella) |
 | 24 nov 2026 | No se agrega descarga del CSV del concentrado en el Centro ni en Slack: se queda como propuesta para que la operación se haga en NetSuite y no regrese a Excel |
 
 ## 8. Pendientes y riesgos
@@ -283,3 +299,5 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 - El prototipo `../../NS to Slack/MR_Notificaciones_Slack_P2P.js` tiene el bot token de Slack escrito en el código: **revocarlo** y rotarlo.
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
 - Propuesta (no aprobada): botón "Descargar CSV" del concentrado en el Centro y en el resumen de CXP, con una ruta `?action=csv&proposal=N` del Suitelet que sirve el archivo ya ligado al concentrado. Se pospuso para no fomentar volver a Excel.
+- Por confirmar en el sandbox (25 nov): que el memo sea el del encabezado de la factura y que el texto de subsidiaria jerárquico se ordene como se espera.
+- Safari/iPhone reales aún sin probar para tarjetas y "Ver detalle".

@@ -54,9 +54,17 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
 2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado. El número de factura abre la factura con sus adjuntos.
    - **Por moneda:** cada concentrado muestra primero la tabla de **Dólares (USD)** y luego la de **Pesos (MXN)**, cada una con su número de facturas y su total.
    - **Orden dentro de cada tabla:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad; dentro de cada prioridad, de la factura más grande a la más chica. La prioridad aparece como etiqueta junto al nombre del proveedor.
+   - **Por subsidiaria:** dentro de cada concentrado las facturas se agrupan por subsidiaria (en orden alfabético; las que no tienen, al final) y luego por moneda.
+   - **Qué ves de cada factura:** proveedor con su prioridad y su descripción (si la tiene), folio, fecha de la factura, vencimiento, nota (memo) y monto. En el celular se muestran como tarjetas.
+   - **Ver detalle:** abre más datos de esa factura (los que CXP definió en la búsqueda de pendientes), sin repetir lo que ya ves.
+   - **Vista completa** (solo en computadora): muestra todos esos datos como columnas de la tabla. Se queda recordada en tu navegador.
    - La casilla del encabezado de cada tabla selecciona todas las de esa moneda. En el celular, "Seleccionar todas" marca las del concentrado completo.
 
    > 📷 **Captura:** el Centro de Autorización con un concentrado, la tabla de USD y la de MXN, y las etiquetas de prioridad.
+   >
+   > 📷 **Captura:** una factura con "Ver detalle" abierto, y la "Vista completa" en computadora.
+   >
+   > 📷 **Captura:** el Centro en el celular, con tarjetas.
 
 3. Marca las facturas. Abajo verás cuántas seleccionaste y por cuánto.
 4. **Aprobar:** confirma el total. Cada factura pasa al siguiente nivel; en el último queda Autorizada. Te llega un mensaje en Slack confirmando cuántas aprobaste, por cuánto y a quién pasaron.
@@ -186,6 +194,17 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 - Las aprobaciones por enlace quedan en la bitácora con canal **Enlace externo**.
 
 > 📷 **Captura:** el nivel de aprobación con la casilla "Aprueba por enlace externo".
+
+### Descripción de proveedor y columnas del detalle
+
+- **Descripción de proveedor:** en el registro del proveedor, llena el campo **Descripción de proveedor** (qué hace o qué suministra). Aparece bajo su nombre en el Centro; si está vacío, no se muestra nada. Llenarlo corresponde al negocio.
+- **Columnas del detalle:** "Ver detalle" y "Vista completa" muestran todas las columnas de la búsqueda de pendientes (la misma del CSV del lunes). Agrega ahí lo que el aprobador necesite para decidir.
+- **Nada sensible en esa búsqueda** (datos bancarios, notas internas, fórmulas con enlaces): la ven todos los aprobadores y también los CEOs por enlace, y quien tenga un enlace válido la ve completa. Evita columnas de resumen (agrupadas o con total): el detalle podría no aparecer.
+- **Compártela** (Audiencia de la búsqueda) con los roles que usan el Centro; si un rol no la ve, su Centro funciona pero sin detalle.
+
+> 📷 **Captura:** la búsqueda de pendientes con su audiencia y sus columnas.
+>
+> 📷 **Captura:** el campo "Descripción de proveedor" en el proveedor.
 
 ### Accesos
 
