@@ -238,6 +238,7 @@
       }
 
       /* Subsidiary strip: first split inside each group */
+      /* Collapsible (native details/summary); closing it keeps the selection. */
       .subsidiary-head {
         display: flex;
         align-items: baseline;
@@ -246,11 +247,42 @@
         flex-wrap: wrap;
         padding: 14px 22px 12px;
         border-top: 1px solid var(--line-strong);
+        cursor: pointer;
+        list-style: none;
       }
-      .subsidiary-head h3 {
-        margin: 0;
+      .subsidiary-head::-webkit-details-marker {
+        display: none;
+      }
+      .subsidiary-head:hover {
+        background: var(--surface-2);
+      }
+      .subsidiary-head:focus-visible {
+        outline-offset: -2px;
+      }
+      .sub-title {
+        display: flex;
+        align-items: baseline;
+        gap: 8px 12px;
+        flex-wrap: wrap;
+      }
+      .sub-name {
         font-size: 1rem;
         font-weight: 700;
+      }
+      .sub-name::before {
+        content: '▾';
+        display: inline-block;
+        width: 1.1em;
+        color: var(--orange);
+      }
+      details:not([open]) > .subsidiary-head .sub-name::before {
+        content: '▸';
+      }
+      .sub-selected {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--orange-ink);
+        white-space: nowrap;
       }
 
       /* Currency strip above each table */
@@ -940,14 +972,28 @@
           return totals;
         };
 
+        /** A closed subsidiary tells how many of its bills are still selected. */
+        const refreshSectionCounters = () => {
+          document.querySelectorAll('details.subsidiary').forEach((d) => {
+            const n = d.querySelectorAll('input[data-line]:checked').length;
+            const counter = d.querySelector('.sub-selected');
+            counter.textContent =
+              n && !d.open ? `✓ ${n} ${n === 1 ? 'seleccionada' : 'seleccionadas'}` : '';
+            counter.hidden = !counter.textContent;
+          });
+        };
+
         const refreshFooter = () => {
+          refreshSectionCounters();
           const ids = selectedIds();
           const summary = $('summary');
           if (busy) {
             summary.textContent = 'Procesando…';
           } else if (ids.length) {
             summary.replaceChildren(
-              el('strong', { text: `${ids.length} seleccionadas` }),
+              el('strong', {
+                text: `${ids.length} ${ids.length === 1 ? 'seleccionada' : 'seleccionadas'}`,
+              }),
               ...Object.keys(selectedTotals(ids))
                 .sort(byCurrency)
                 .map((code) =>
@@ -1100,6 +1146,7 @@
             : `concentrado del ${group.meetingDate}, ${group.levelName}`;
           const items = group.lines.map((line) => ({ line, trs: renderLine(line) }));
           const boxesOf = (list) => list.map((i) => i.trs[0].querySelector('input'));
+          const openOnly = (boxes) => boxes.filter((b) => b.closest('details').open);
           // Phones hide the table headers, so they get one "select all" for the whole group.
           const mobileBox = el('input', {
             type: 'checkbox',
@@ -1121,7 +1168,8 @@
                 boxesOf(tableItems).forEach((b) => {
                   b.checked = headBox.checked;
                 });
-                mobileBox.checked = boxesOf(items).every((b) => b.checked);
+                const open = openOnly(boxesOf(items));
+                mobileBox.checked = open.length > 0 && open.every((b) => b.checked);
                 refreshFooter();
               });
               const currencyHead = el('div', { class: 'currency-head' }, [
@@ -1160,9 +1208,12 @@
             const subItems = items.filter((i) => (i.line.subsidiary || '') === sub);
             const subName = sub || 'Sin subsidiaria';
             const totals = sumByCurrency(subItems.map((i) => i.line));
-            const subHead = el('div', { class: 'subsidiary-head' }, [
-              el('h3', { text: subName }),
-              el('div', { class: 'group-stats' }, [
+            const subHead = el('summary', { class: 'subsidiary-head' }, [
+              el('span', { class: 'sub-title' }, [
+                el('span', { class: 'sub-name', text: subName }),
+                el('span', { class: 'sub-selected', 'aria-live': 'polite' }),
+              ]),
+              el('span', { class: 'group-stats' }, [
                 el('span', {
                   text: `${subItems.length} ${subItems.length === 1 ? 'factura' : 'facturas'}`,
                 }),
@@ -1176,10 +1227,16 @@
                   ),
               ]),
             ]);
-            return [subHead, ...currencyTables(subItems, subName)];
+            const section = el('details', { class: 'subsidiary', open: '' }, [
+              subHead,
+              ...currencyTables(subItems, subName),
+            ]);
+            section.addEventListener('toggle', refreshFooter);
+            return [section];
           });
           mobileBox.addEventListener('change', () => {
-            [...boxesOf(items), ...headBoxes].forEach((b) => {
+            // Only open sections: a closed one keeps its selection as the user left it.
+            openOnly([...boxesOf(items), ...headBoxes]).forEach((b) => {
               b.checked = mobileBox.checked;
             });
             refreshFooter();
