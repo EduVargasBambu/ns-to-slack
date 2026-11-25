@@ -16,6 +16,7 @@ define([], () => {
   const Secret = {
     SLACK_BOT_TOKEN: 'custsecret_gpv_slack_bot_token',
     SLACK_SIGNING_SECRET: 'custsecret_gpv_slack_signing_secret',
+    LINK_KEY: 'custsecret_gpv_link_key',
   };
 
   const AuditLog = {
