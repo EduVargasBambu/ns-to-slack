@@ -47,6 +47,10 @@
       * {
         box-sizing: border-box;
       }
+      /* Layout rules below set display on rows; the hidden attribute must still win. */
+      [hidden] {
+        display: none !important;
+      }
       ::selection {
         background: var(--orange-tint);
         color: var(--ink);
@@ -135,6 +139,32 @@
       .avatar:empty {
         display: none;
       }
+      .view-toggle {
+        min-height: 38px;
+        padding: 7px 16px;
+        font-size: 0.85rem;
+        color: #fff;
+        background: transparent;
+        border-color: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+      }
+      .view-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .view-toggle[aria-pressed='true'] {
+        background: #fff;
+        color: var(--charcoal);
+        border-color: #fff;
+      }
+      .view-toggle:focus-visible {
+        outline-color: #fff;
+      }
+      /* The full view is a desktop table; on narrower screens it is not offered. */
+      @media (max-width: 1023px) {
+        .view-toggle {
+          display: none;
+        }
+      }
 
       main {
         padding-top: 32px;
@@ -207,6 +237,22 @@
         color: var(--ink);
       }
 
+      /* Subsidiary strip: first split inside each group */
+      .subsidiary-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6px 18px;
+        flex-wrap: wrap;
+        padding: 14px 22px 12px;
+        border-top: 1px solid var(--line-strong);
+      }
+      .subsidiary-head h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
       /* Currency strip above each table */
       .currency-head {
         display: flex;
@@ -236,13 +282,14 @@
         table-layout: fixed;
       }
       .col-bill {
-        width: 22%;
+        width: 14%;
       }
+      .col-date,
       .col-due {
-        width: 120px;
+        width: 106px;
       }
       th.col-amount {
-        width: 200px;
+        width: 190px;
       }
       th {
         text-align: left;
@@ -260,7 +307,9 @@
         border-bottom: 1px solid var(--line);
         vertical-align: middle;
       }
-      tbody tr:last-child td {
+      tbody tr:last-child td,
+      tbody tr:has(+ tr.detail-row[hidden]:last-child) td,
+      tbody tr:has(+ tr.detail-row:not([hidden])) td {
         border-bottom: 0;
       }
       tbody tr {
@@ -285,6 +334,11 @@
       .vendor {
         font-weight: 700;
         overflow-wrap: break-word;
+      }
+      .vendor-desc {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: var(--muted);
       }
       .priority {
         display: inline-block;
@@ -318,10 +372,18 @@
       .bill a:hover {
         text-decoration-color: var(--orange);
       }
+      .date,
       .due {
         color: var(--muted);
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
+      }
+      .memo {
+        color: var(--muted);
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .amount {
         font-weight: 700;
@@ -334,6 +396,90 @@
         color: var(--faint);
         margin-right: 6px;
       }
+      .more-btn {
+        display: block;
+        min-height: 32px;
+        margin: 4px -10px 0 auto;
+        padding: 4px 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+      }
+      .more-btn:hover {
+        color: var(--ink);
+        background: var(--line);
+      }
+      .more-btn::after {
+        content: ' ▾';
+      }
+      .more-btn[aria-expanded='true'] {
+        color: var(--ink);
+      }
+      .more-btn[aria-expanded='true']::after {
+        content: ' ▴';
+      }
+
+      /* Detail: every saved search column of one bill, under its row */
+      tbody tr.detail-row,
+      tbody tr.detail-row:hover {
+        cursor: default;
+        background: var(--surface-2);
+      }
+      .detail-row td {
+        padding: 12px 22px 16px 64px;
+      }
+      body.readonly .detail-row td {
+        padding-left: 22px;
+      }
+      .details {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px 20px;
+      }
+      .details div {
+        min-width: 0;
+      }
+      .details dt {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .details dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Full view (desktop only): one column per saved search column */
+      .full {
+        display: none;
+      }
+      @media (min-width: 1024px) {
+        body.full-view .compact,
+        body.full-view .more-btn,
+        body.full-view tr.detail-row {
+          display: none;
+        }
+        body.full-view .full {
+          display: table-cell;
+        }
+        body.full-view .table-scroll {
+          overflow-x: auto;
+        }
+        body.full-view table {
+          table-layout: auto;
+        }
+        body.full-view td.full {
+          font-size: 0.88rem;
+          overflow-wrap: break-word;
+        }
+      }
       input[type='checkbox'] {
         width: 20px;
         height: 20px;
@@ -342,7 +488,7 @@
         cursor: pointer;
       }
 
-      /* Phones: each row becomes a compact card */
+      /* Phones */
       @media (max-width: 640px) {
         .topbar-inner,
         main,
@@ -359,66 +505,12 @@
         h1 {
           font-size: 1.35rem;
         }
-        .group-head {
+        .group-head,
+        .subsidiary-head {
           padding: 16px;
         }
         .currency-head {
           padding: 10px 16px;
-        }
-        table,
-        tbody {
-          display: block;
-        }
-        thead {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          overflow: hidden;
-          clip: rect(0 0 0 0);
-        }
-        tbody tr {
-          display: grid;
-          grid-template-columns: 36px 1fr auto;
-          grid-template-areas:
-            'check vendor vendor'
-            'check bill amount'
-            'check due due';
-          column-gap: 8px;
-          row-gap: 3px;
-          padding: 14px 16px;
-          border-bottom: 1px solid var(--line);
-        }
-        tbody tr:last-child {
-          border-bottom: 0;
-        }
-        td {
-          padding: 0;
-          border: 0;
-        }
-        td.col-check {
-          grid-area: check;
-          padding: 2px 0 0;
-          width: auto;
-        }
-        td.vendor {
-          grid-area: vendor;
-          min-width: 0;
-        }
-        td.bill {
-          grid-area: bill;
-          font-size: 0.88rem;
-        }
-        td.due {
-          grid-area: due;
-          font-size: 0.85rem;
-        }
-        td.due::before {
-          content: 'vence ';
-        }
-        td.col-amount {
-          grid-area: amount;
-          padding: 0;
-          align-self: center;
         }
       }
       .select-all-mobile {
@@ -430,12 +522,96 @@
         color: var(--muted);
         border-top: 1px solid var(--line);
       }
-      @media (max-width: 640px) {
+      /* Phones and small tablets: each row becomes a card, too many columns for a table */
+      @media (max-width: 900px) {
+        table,
+        tbody {
+          display: block;
+        }
+        thead {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip: rect(0 0 0 0);
+        }
+        /* Flex card: vendor and amount, then a line break, then folio · fecha · vence and the note. */
+        tbody tr {
+          position: relative;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          row-gap: 3px;
+          padding: 14px 16px 14px 52px;
+          border-bottom: 1px solid var(--line);
+        }
+        tbody tr:not(.detail-row)::before {
+          content: '';
+          order: 3;
+          flex-basis: 100%;
+        }
+        tbody tr:last-child,
+        tbody tr:has(+ tr.detail-row[hidden]:last-child),
+        tbody tr:has(+ tr.detail-row:not([hidden])) {
+          border-bottom: 0;
+        }
+        td {
+          padding: 0;
+          border: 0;
+        }
+        td.col-check {
+          position: absolute;
+          left: 16px;
+          top: 16px;
+          padding: 0;
+          width: auto;
+        }
+        td.vendor {
+          order: 1;
+          flex: 1 1 0;
+          min-width: 0;
+          padding-right: 12px;
+        }
+        td.col-amount {
+          order: 2;
+          padding: 0;
+        }
+        td.bill,
+        td.date,
+        td.due {
+          order: 4;
+          font-size: 0.82rem;
+        }
+        td.date::before {
+          content: '\00a0·\00a0';
+        }
+        td.due::before {
+          content: '\00a0· vence ';
+        }
+        td.memo {
+          order: 5;
+          flex-basis: 100%;
+          min-width: 0;
+          font-size: 0.85rem;
+        }
+        td.memo:empty {
+          display: none;
+        }
+        tbody tr.detail-row {
+          display: block;
+          padding: 0 16px 14px 52px;
+        }
+        body.readonly tbody tr.detail-row {
+          padding-left: 16px;
+        }
+        .detail-row td,
+        body.readonly .detail-row td {
+          padding: 10px 0 0;
+        }
         .select-all-mobile {
           display: flex;
         }
       }
-
       /* Loading and empty states */
       .skeleton {
         height: 14px;
@@ -637,13 +813,9 @@
       body.readonly tbody tr {
         cursor: default;
       }
-      @media (max-width: 640px) {
-        body.readonly tbody tr {
-          grid-template-columns: 1fr auto;
-          grid-template-areas:
-            'vendor vendor'
-            'bill amount'
-            'due due';
+      @media (max-width: 900px) {
+        body.readonly tbody tr:not(.detail-row) {
+          padding-left: 16px;
         }
       }
     </style>
@@ -656,6 +828,9 @@
           <span class="brand-app">Centro de Autorización</span>
         </div>
         <div class="user">
+          <button id="full-view" class="view-toggle" type="button" aria-pressed="false" hidden>
+            Vista completa
+          </button>
           <span id="who"></span>
           <span id="avatar" class="avatar" aria-hidden="true"></span>
         </div>
@@ -708,6 +883,15 @@
         const token = params.get('t');
         const readOnly = !token && params.get('view') === 'authorized';
         const tokenHeaders = token ? { 'X-GPV-Token': token } : {};
+        /** Saved search column labels for "Ver detalle" and the full view; empty without the search. */
+        let detailColumns = [];
+        const FULL_VIEW_KEY = 'gpv-full-view';
+        let fullView = false;
+        try {
+          fullView = window.localStorage.getItem(FULL_VIEW_KEY) === '1';
+        } catch {
+          // Storage blocked (private mode, policies): start in the compact view.
+        }
 
         /** Same currency order as the server: USD, MXN, then any other alphabetically. */
         const CURRENCY_ORDER = ['USD', 'MXN'];
@@ -799,6 +983,7 @@
           $('groups').replaceChildren(el('section', { class: 'group' }, rows));
         };
 
+        /** Returns the bill row and, when there are details, its hidden detail row. */
         const renderLine = (line) => {
           const billLink = token
             ? el('span', { text: line.billNumber || 'Factura' })
@@ -808,8 +993,15 @@
                 rel: 'noopener',
                 text: line.billNumber || 'Ver factura',
               });
+          const details = detailColumns.length && Array.isArray(line.details) ? line.details : null;
+          const amountCell = el('td', { class: 'col-amount' }, [
+            el('span', { class: 'amount' }, [
+              el('span', { class: 'currency', text: line.currency }),
+              document.createTextNode(`$${money.format(line.amount)}`),
+            ]),
+          ]);
           const cells = [
-            el('td', { class: 'vendor' }, [
+            el('td', { class: 'vendor compact' }, [
               document.createTextNode(line.vendor || 'Proveedor'),
               ...(line.priority
                 ? [
@@ -820,17 +1012,63 @@
                     }),
                   ]
                 : []),
+              ...(line.vendorDescription
+                ? [el('div', { class: 'vendor-desc', text: line.vendorDescription })]
+                : []),
             ]),
-            el('td', { class: 'bill' }, [billLink]),
-            el('td', { class: 'due', text: line.dueDate || '—' }),
-            el('td', { class: 'col-amount' }, [
-              el('span', { class: 'amount' }, [
-                el('span', { class: 'currency', text: line.currency }),
-                document.createTextNode(`$${money.format(line.amount)}`),
-              ]),
-            ]),
+            el('td', { class: 'bill compact' }, [billLink]),
+            el('td', { class: 'date compact', text: line.billDate || '—' }),
+            el('td', { class: 'due compact', text: line.dueDate || '—' }),
+            el('td', {
+              class: 'memo compact',
+              ...(line.memo ? { title: line.memo } : {}),
+              text: line.memo || '',
+            }),
+            ...detailColumns.map((_, i) =>
+              el('td', { class: 'full', text: (details && details[i]) || '—' }),
+            ),
+            amountCell,
           ];
-          if (readOnly) return el('tr', {}, cells);
+          const extra = [];
+          if (details) {
+            const detailRow = el('tr', { class: 'detail-row', id: `detail-${line.lineId}` }, [
+              // Spans only the compact columns: the detail row never shows in the full view.
+              el('td', { colspan: readOnly ? '6' : '7' }, [
+                el(
+                  'dl',
+                  { class: 'details' },
+                  // Vendor, folio and dates already show above; the full view keeps them.
+                  detailColumns.flatMap((label, i) =>
+                    details[i] &&
+                    [line.vendor, line.billNumber, line.billDate, line.dueDate].includes(details[i])
+                      ? []
+                      : [
+                          el('div', {}, [
+                            el('dt', { text: label }),
+                            el('dd', { text: details[i] || '—' }),
+                          ]),
+                        ],
+                  ),
+                ),
+              ]),
+            ]);
+            detailRow.hidden = true;
+            const more = el('button', {
+              type: 'button',
+              class: 'more-btn',
+              'aria-expanded': 'false',
+              'aria-controls': detailRow.id,
+              'aria-label': `Ver detalle de ${line.vendor || 'factura'} ${line.billNumber || ''}`,
+              text: 'Ver detalle',
+            });
+            more.addEventListener('click', () => {
+              detailRow.hidden = !detailRow.hidden;
+              more.setAttribute('aria-expanded', String(!detailRow.hidden));
+            });
+            amountCell.appendChild(more);
+            extra.push(detailRow);
+          }
+          if (readOnly) return [el('tr', {}, cells), ...extra];
 
           const box = el('input', {
             type: 'checkbox',
@@ -839,68 +1077,109 @@
           });
           box.addEventListener('change', refreshFooter);
           const row = el('tr', {}, [el('td', { class: 'col-check' }, [box]), ...cells]);
-          // Clicking anywhere on the row toggles it; links and the box keep their own click.
+          // Clicking anywhere on the row toggles it; links, buttons and the box keep their own click.
           row.addEventListener('click', (e) => {
-            if (e.target.closest('a, input')) return;
+            if (e.target.closest('a, input, button')) return;
             box.checked = !box.checked;
             refreshFooter();
           });
-          return row;
+          return [row, ...extra];
+        };
+
+        const sumByCurrency = (lines) => {
+          const totals = {};
+          lines.forEach((l) => {
+            totals[l.currency] = (totals[l.currency] || 0) + l.amount;
+          });
+          return totals;
         };
 
         const renderGroup = (group) => {
           const label = readOnly
             ? `concentrado del ${group.meetingDate}`
             : `concentrado del ${group.meetingDate}, ${group.levelName}`;
-          const rows = group.lines.map(renderLine);
-          const boxesOf = (list) => list.map((r) => r.querySelector('input'));
+          const items = group.lines.map((line) => ({ line, trs: renderLine(line) }));
+          const boxesOf = (list) => list.map((i) => i.trs[0].querySelector('input'));
           // Phones hide the table headers, so they get one "select all" for the whole group.
           const mobileBox = el('input', {
             type: 'checkbox',
             id: `all-${group.proposalId}-${group.levelId || ''}`,
           });
-          /** One table per currency; rows keep the server order (priority, then amount). */
-          const currencies = [...new Set(group.lines.map((l) => l.currency))].sort(byCurrency);
           const headBoxes = [];
-          const sections = currencies.flatMap((code) => {
-            const lines = group.lines.filter((l) => l.currency === code);
-            const tableRows = rows.filter((_, i) => group.lines[i].currency === code);
-            const total = lines.reduce((sum, l) => sum + l.amount, 0);
-            const headBox = el('input', {
-              type: 'checkbox',
-              'aria-label': `Seleccionar todas en ${code}: ${label}`,
-            });
-            headBoxes.push(headBox);
-            headBox.addEventListener('change', () => {
-              boxesOf(tableRows).forEach((b) => {
-                b.checked = headBox.checked;
+          /** One table per currency inside each subsidiary; both keep the server order. */
+          const currencyTables = (subItems, subName) => {
+            const currencies = [...new Set(subItems.map((i) => i.line.currency))].sort(byCurrency);
+            return currencies.flatMap((code) => {
+              const tableItems = subItems.filter((i) => i.line.currency === code);
+              const total = tableItems.reduce((sum, i) => sum + i.line.amount, 0);
+              const headBox = el('input', {
+                type: 'checkbox',
+                'aria-label': `Seleccionar todas en ${code} de ${subName}: ${label}`,
               });
-              mobileBox.checked = boxesOf(rows).every((b) => b.checked);
-              refreshFooter();
-            });
-            const currencyHead = el('div', { class: 'currency-head' }, [
-              el('strong', { text: `${CURRENCY_NAMES[code] || code} (${code})` }),
-              el('span', {
-                text: `${lines.length} ${lines.length === 1 ? 'factura' : 'facturas'}`,
-              }),
-              el('span', {}, [el('strong', { text: `$${money.format(total)}` })]),
-            ]);
-            const table = el('table', {}, [
-              el('thead', {}, [
-                el('tr', {}, [
-                  ...(readOnly ? [] : [el('th', { class: 'col-check', scope: 'col' }, [headBox])]),
-                  el('th', { scope: 'col', text: 'Proveedor' }),
-                  el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
-                  el('th', { class: 'col-due', scope: 'col', text: 'Vence' }),
-                  el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
+              headBoxes.push(headBox);
+              headBox.addEventListener('change', () => {
+                boxesOf(tableItems).forEach((b) => {
+                  b.checked = headBox.checked;
+                });
+                mobileBox.checked = boxesOf(items).every((b) => b.checked);
+                refreshFooter();
+              });
+              const currencyHead = el('div', { class: 'currency-head' }, [
+                el('strong', { text: `${CURRENCY_NAMES[code] || code} (${code})` }),
+                el('span', {
+                  text: `${tableItems.length} ${tableItems.length === 1 ? 'factura' : 'facturas'}`,
+                }),
+                el('span', {}, [el('strong', { text: `$${money.format(total)}` })]),
+              ]);
+              const table = el('table', {}, [
+                el('thead', {}, [
+                  el('tr', {}, [
+                    ...(readOnly
+                      ? []
+                      : [el('th', { class: 'col-check', scope: 'col' }, [headBox])]),
+                    el('th', { class: 'compact', scope: 'col', text: 'Proveedor' }),
+                    el('th', { class: 'col-bill compact', scope: 'col', text: 'Factura' }),
+                    el('th', { class: 'col-date compact', scope: 'col', text: 'Fecha' }),
+                    el('th', { class: 'col-due compact', scope: 'col', text: 'Vence' }),
+                    el('th', { class: 'compact', scope: 'col', text: 'Nota' }),
+                    ...detailColumns.map((text) => el('th', { class: 'full', scope: 'col', text })),
+                    el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
+                  ]),
                 ]),
+                el(
+                  'tbody',
+                  {},
+                  tableItems.flatMap((i) => i.trs),
+                ),
+              ]);
+              return [currencyHead, el('div', { class: 'table-scroll' }, [table])];
+            });
+          };
+          const subsidiaries = [...new Set(group.lines.map((l) => l.subsidiary || ''))];
+          const sections = subsidiaries.flatMap((sub) => {
+            const subItems = items.filter((i) => (i.line.subsidiary || '') === sub);
+            const subName = sub || 'Sin subsidiaria';
+            const totals = sumByCurrency(subItems.map((i) => i.line));
+            const subHead = el('div', { class: 'subsidiary-head' }, [
+              el('h3', { text: subName }),
+              el('div', { class: 'group-stats' }, [
+                el('span', {
+                  text: `${subItems.length} ${subItems.length === 1 ? 'factura' : 'facturas'}`,
+                }),
+                ...Object.keys(totals)
+                  .sort(byCurrency)
+                  .map((code) =>
+                    el('span', {}, [
+                      document.createTextNode(`${code} `),
+                      el('strong', { text: `$${money.format(totals[code])}` }),
+                    ]),
+                  ),
               ]),
-              el('tbody', {}, tableRows),
             ]);
-            return [currencyHead, table];
+            return [subHead, ...currencyTables(subItems, subName)];
           });
           mobileBox.addEventListener('change', () => {
-            [...boxesOf(rows), ...headBoxes].forEach((b) => {
+            [...boxesOf(items), ...headBoxes].forEach((b) => {
               b.checked = mobileBox.checked;
             });
             refreshFooter();
@@ -939,6 +1218,28 @@
           );
         };
 
+        /** Without detail columns there is nothing to show in the full view. */
+        const applyFullView = () => {
+          document.body.classList.toggle('full-view', fullView && detailColumns.length > 0);
+          $('full-view').setAttribute('aria-pressed', String(fullView));
+        };
+        $('full-view').addEventListener('click', () => {
+          fullView = !fullView;
+          try {
+            window.localStorage.setItem(FULL_VIEW_KEY, fullView ? '1' : '0');
+          } catch {
+            // Not remembered; the switch still works for this visit.
+          }
+          // The full view hides the detail rows; close them so the compact view comes back clean.
+          document.querySelectorAll('tr.detail-row').forEach((r) => {
+            r.hidden = true;
+          });
+          document.querySelectorAll('.more-btn').forEach((b) => {
+            b.setAttribute('aria-expanded', 'false');
+          });
+          applyFullView();
+        });
+
         const load = async () => {
           const res = await fetch(url(readOnly ? 'authorized' : 'pending'), {
             credentials: 'same-origin',
@@ -949,10 +1250,10 @@
           $('who').textContent = data.userName;
           $('avatar').textContent = (data.userName || '').trim().charAt(0).toUpperCase();
           const lines = data.groups.flatMap((g) => g.lines);
-          const overallTotals = {};
-          lines.forEach((l) => {
-            overallTotals[l.currency] = (overallTotals[l.currency] || 0) + l.amount;
-          });
+          const overallTotals = sumByCurrency(lines);
+          detailColumns = Array.isArray(data.detailColumns) ? data.detailColumns : [];
+          $('full-view').hidden = !detailColumns.length;
+          applyFullView();
           $('overview').replaceChildren(
             ...(lines.length
               ? [
