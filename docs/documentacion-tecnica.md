@@ -300,5 +300,5 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 - El prototipo `../../NS to Slack/MR_Notificaciones_Slack_P2P.js` tiene el bot token de Slack escrito en el código: **revocarlo** y rotarlo.
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
 - Propuesta (no aprobada): botón "Descargar CSV" del concentrado en el Centro y en el resumen de CXP, con una ruta `?action=csv&proposal=N` del Suitelet que sirve el archivo ya ligado al concentrado. Se pospuso para no fomentar volver a Excel.
-- Por confirmar en el sandbox (25 nov): que el memo sea el del encabezado de la factura y que el texto de subsidiaria jerárquico se ordene como se espera.
+- Probado en el sandbox (25 nov): datos de la factura, orden y pliegue por subsidiaria, "Ver detalle" (casillas como Sí/No, sin importe repetido) y "Vista completa".
 - Safari/iPhone reales aún sin probar para tarjetas y "Ver detalle".
