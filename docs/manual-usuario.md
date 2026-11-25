@@ -54,10 +54,10 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
 2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado. El número de factura abre la factura con sus adjuntos.
    - **Por moneda:** cada concentrado muestra primero la tabla de **Dólares (USD)** y luego la de **Pesos (MXN)**, cada una con su número de facturas y su total.
    - **Orden dentro de cada tabla:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad; dentro de cada prioridad, de la factura más grande a la más chica. La prioridad aparece como etiqueta junto al nombre del proveedor.
-   - **Por subsidiaria:** dentro de cada concentrado las facturas se agrupan por subsidiaria (en orden alfabético; las que no tienen, al final) y luego por moneda. Toca el nombre de una subsidiaria para plegarla o desplegarla; todas empiezan abiertas. Si pliegas una con facturas marcadas, su encabezado dice cuántas, y "Seleccionar todas" solo marca las subsidiarias abiertas.
+   - **Por subsidiaria:** dentro de cada concentrado las facturas se agrupan por subsidiaria (en orden alfabético; las que no tienen, al final) y luego por moneda. Toca el nombre de una subsidiaria para plegarla o desplegarla; todas empiezan abiertas. Si pliegas una con facturas marcadas, su encabezado dice cuántas. En el celular, cada subsidiaria tiene su propio "Seleccionar todas".
    - **Qué ves de cada factura:** proveedor con su prioridad y su descripción (si la tiene), folio, fecha de la factura, vencimiento, nota (memo) y monto. En el celular se muestran como tarjetas.
    - **Ver detalle:** abre más datos de esa factura (los que CXP definió en la búsqueda de pendientes), sin repetir lo que ya ves.
-   - **Vista completa** (solo en computadora): muestra todos esos datos como columnas de la tabla. Se queda recordada en tu navegador.
+   - **Vista completa** (solo en computadora): muestra todos esos datos como columnas de la tabla, junto al proveedor, el folio y el monto. Se queda recordada en tu navegador.
    - La casilla del encabezado de cada tabla selecciona todas las de esa moneda. En el celular, "Seleccionar todas" marca las del concentrado completo.
 
    > 📷 **Captura:** el Centro de Autorización con un concentrado, la tabla de USD y la de MXN, y las etiquetas de prioridad.

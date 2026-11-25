@@ -507,6 +507,9 @@
         body.full-view table {
           table-layout: auto;
         }
+        body.full-view td.bill {
+          white-space: nowrap;
+        }
         body.full-view td.full {
           font-size: 0.88rem;
           overflow-wrap: break-word;
@@ -917,6 +920,8 @@
         const tokenHeaders = token ? { 'X-GPV-Token': token } : {};
         /** Saved search column labels for "Ver detalle" and the full view; empty without the search. */
         let detailColumns = [];
+        /** Indexes of detailColumns shown in the full view: not the ones that only repeat vendor or folio. */
+        let fullColumns = [];
         const FULL_VIEW_KEY = 'gpv-full-view';
         let fullView = false;
         try {
@@ -1047,7 +1052,7 @@
             ]),
           ]);
           const cells = [
-            el('td', { class: 'vendor compact' }, [
+            el('td', { class: 'vendor' }, [
               document.createTextNode(line.vendor || 'Proveedor'),
               ...(line.priority
                 ? [
@@ -1062,7 +1067,7 @@
                 ? [el('div', { class: 'vendor-desc', text: line.vendorDescription })]
                 : []),
             ]),
-            el('td', { class: 'bill compact' }, [billLink]),
+            el('td', { class: 'bill' }, [billLink]),
             el('td', { class: 'date compact', text: line.billDate || '—' }),
             el('td', { class: 'due compact', text: line.dueDate || '—' }),
             el('td', {
@@ -1070,7 +1075,7 @@
               ...(line.memo ? { title: line.memo } : {}),
               text: line.memo || '',
             }),
-            ...detailColumns.map((_, i) =>
+            ...fullColumns.map((i) =>
               el('td', { class: 'full', text: (details && details[i]) || '—' }),
             ),
             amountCell,
@@ -1146,15 +1151,8 @@
             : `concentrado del ${group.meetingDate}, ${group.levelName}`;
           const items = group.lines.map((line) => ({ line, trs: renderLine(line) }));
           const boxesOf = (list) => list.map((i) => i.trs[0].querySelector('input'));
-          const openOnly = (boxes) => boxes.filter((b) => b.closest('details').open);
-          // Phones hide the table headers, so they get one "select all" for the whole group.
-          const mobileBox = el('input', {
-            type: 'checkbox',
-            id: `all-${group.proposalId}-${group.levelId || ''}`,
-          });
-          const headBoxes = [];
           /** One table per currency inside each subsidiary; both keep the server order. */
-          const currencyTables = (subItems, subName) => {
+          const currencyTables = (subItems, subName, subBox, headBoxes) => {
             const currencies = [...new Set(subItems.map((i) => i.line.currency))].sort(byCurrency);
             return currencies.flatMap((code) => {
               const tableItems = subItems.filter((i) => i.line.currency === code);
@@ -1168,8 +1166,7 @@
                 boxesOf(tableItems).forEach((b) => {
                   b.checked = headBox.checked;
                 });
-                const open = openOnly(boxesOf(items));
-                mobileBox.checked = open.length > 0 && open.every((b) => b.checked);
+                subBox.checked = boxesOf(subItems).every((b) => b.checked);
                 refreshFooter();
               });
               const currencyHead = el('div', { class: 'currency-head' }, [
@@ -1185,12 +1182,14 @@
                     ...(readOnly
                       ? []
                       : [el('th', { class: 'col-check', scope: 'col' }, [headBox])]),
-                    el('th', { class: 'compact', scope: 'col', text: 'Proveedor' }),
-                    el('th', { class: 'col-bill compact', scope: 'col', text: 'Factura' }),
+                    el('th', { scope: 'col', text: 'Proveedor' }),
+                    el('th', { class: 'col-bill', scope: 'col', text: 'Factura' }),
                     el('th', { class: 'col-date compact', scope: 'col', text: 'Fecha' }),
                     el('th', { class: 'col-due compact', scope: 'col', text: 'Vence' }),
                     el('th', { class: 'compact', scope: 'col', text: 'Nota' }),
-                    ...detailColumns.map((text) => el('th', { class: 'full', scope: 'col', text })),
+                    ...fullColumns.map((i) =>
+                      el('th', { class: 'full', scope: 'col', text: detailColumns[i] }),
+                    ),
                     el('th', { class: 'col-amount', scope: 'col', text: 'Monto' }),
                   ]),
                 ]),
@@ -1204,9 +1203,26 @@
             });
           };
           const subsidiaries = [...new Set(group.lines.map((l) => l.subsidiary || ''))];
-          const sections = subsidiaries.flatMap((sub) => {
+          const sections = subsidiaries.flatMap((sub, index) => {
             const subItems = items.filter((i) => (i.line.subsidiary || '') === sub);
             const subName = sub || 'Sin subsidiaria';
+            // Phones hide the table headers, so each subsidiary gets its own "select all".
+            const subBox = el('input', {
+              type: 'checkbox',
+              id: `all-${group.proposalId}-${group.levelId || ''}-${index}`,
+            });
+            const headBoxes = [];
+            const tables = currencyTables(subItems, subName, subBox, headBoxes);
+            subBox.addEventListener('change', () => {
+              [...boxesOf(subItems), ...headBoxes].forEach((b) => {
+                b.checked = subBox.checked;
+              });
+              refreshFooter();
+            });
+            const subAll = el('label', { class: 'select-all-mobile', for: subBox.id }, [
+              subBox,
+              document.createTextNode(`Seleccionar todas de ${subName}`),
+            ]);
             const totals = sumByCurrency(subItems.map((i) => i.line));
             const subHead = el('summary', { class: 'subsidiary-head' }, [
               el('span', { class: 'sub-title' }, [
@@ -1229,19 +1245,12 @@
             ]);
             const section = el('details', { class: 'subsidiary', open: '' }, [
               subHead,
-              ...currencyTables(subItems, subName),
+              ...(readOnly ? [] : [subAll]),
+              ...tables,
             ]);
             section.addEventListener('toggle', refreshFooter);
             return [section];
           });
-          mobileBox.addEventListener('change', () => {
-            // Only open sections: a closed one keeps its selection as the user left it.
-            openOnly([...boxesOf(items), ...headBoxes]).forEach((b) => {
-              b.checked = mobileBox.checked;
-            });
-            refreshFooter();
-          });
-
           const head = el('div', { class: 'group-head' }, [
             el('div', { class: 'group-title' }, [
               el('h2', { text: `Concentrado del ${group.meetingDate}` }),
@@ -1264,15 +1273,7 @@
                 ),
             ]),
           ]);
-          const mobileAll = el('label', { class: 'select-all-mobile', for: mobileBox.id }, [
-            mobileBox,
-            document.createTextNode('Seleccionar todas'),
-          ]);
-          return el(
-            'section',
-            { class: 'group', 'aria-label': label },
-            readOnly ? [head, ...sections] : [head, mobileAll, ...sections],
-          );
+          return el('section', { class: 'group', 'aria-label': label }, [head, ...sections]);
         };
 
         /** Without detail columns there is nothing to show in the full view. */
@@ -1309,6 +1310,15 @@
           const lines = data.groups.flatMap((g) => g.lines);
           const overallTotals = sumByCurrency(lines);
           detailColumns = Array.isArray(data.detailColumns) ? data.detailColumns : [];
+          // Vendor and folio stay as fixed columns in the full view; drop search columns that repeat them.
+          const withDetails = lines.filter((l) => Array.isArray(l.details));
+          fullColumns = detailColumns
+            .map((_, i) => i)
+            .filter(
+              (i) =>
+                !withDetails.length ||
+                !withDetails.every((l) => [l.vendor, l.billNumber].includes(l.details[i])),
+            );
           $('full-view').hidden = !detailColumns.length;
           applyFullView();
           $('overview').replaceChildren(
