@@ -28,10 +28,12 @@ define(['N/search', './gpv_constants_lib', './gpv_proposal_lib'], (
           ApprovalLevel.APPROVAL_FIELD,
           ApprovalLevel.APPROVER,
           ApprovalLevel.SUBSTITUTE,
+          ApprovalLevel.EXTERNAL_LINK,
         ],
       })
       .run()
       .each((result) => {
+        const external = result.getValue(ApprovalLevel.EXTERNAL_LINK);
         levels.push({
           id: String(result.id),
           name: String(result.getValue('name')),
@@ -39,6 +41,7 @@ define(['N/search', './gpv_constants_lib', './gpv_proposal_lib'], (
           approvalField: String(result.getValue(ApprovalLevel.APPROVAL_FIELD) || '').trim(),
           approverId: String(result.getValue(ApprovalLevel.APPROVER) || ''),
           substituteId: String(result.getValue(ApprovalLevel.SUBSTITUTE) || ''),
+          externalLink: external === true || external === 'T',
         });
         return true;
       });

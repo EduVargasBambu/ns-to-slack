@@ -83,5 +83,17 @@ define(['./gpv_line_state_machine_lib', './gpv_constants_lib'], (stateMachine, c
     };
   };
 
-  return { Outcome, planLineAction };
+  /**
+   * Whether the employee approves by external link (approver or substitute of such a level).
+   * @param {GpvLevel[]} levels
+   * @param {string} employeeId
+   * @returns {boolean}
+   */
+  const isExternalLinkEmployee = (levels, employeeId) =>
+    employeeId !== '' &&
+    levels.some(
+      (l) => l.externalLink && (l.approverId === employeeId || l.substituteId === employeeId),
+    );
+
+  return { Outcome, planLineAction, isExternalLinkEmployee };
 });

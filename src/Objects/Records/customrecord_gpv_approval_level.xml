@@ -67,6 +67,20 @@
       <showinlist>T</showinlist>
       <storevalue>T</storevalue>
     </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_gpv_lvl_external_link">
+      <accesslevel>2</accesslevel>
+      <defaultchecked>F</defaultchecked>
+      <description>Los aprobadores de este nivel no tienen usuario de NetSuite y aprueban por enlace firmado.</description>
+      <displaytype>NORMAL</displaytype>
+      <fieldtype>CHECKBOX</fieldtype>
+      <help>Márcala en los niveles cuyos aprobadores no tienen usuario de NetSuite (CEOs). El DM de Slack llevará un enlace firmado que caduca en 7 días. Al desmarcarla, los enlaces ya enviados dejan de funcionar.</help>
+      <isparent>F</isparent>
+      <ismandatory>F</ismandatory>
+      <label>Aprueba por enlace externo</label>
+      <searchlevel>2</searchlevel>
+      <showinlist>T</showinlist>
+      <storevalue>T</storevalue>
+    </customrecordcustomfield>
     <customrecordcustomfield scriptid="custrecord_gpv_lvl_legacy_field">
       <accesslevel>2</accesslevel>
       <description>ID de la casilla de la factura que registra la aprobación de este nivel (custbody_gpv_*_approval).</description>

@@ -13,4 +13,6 @@ type GpvLevel = {
   approverId: string;
   /** Optional stand-in approver; '' when there is none. */
   substituteId: string;
+  /** True when this level's approvers approve by signed external link (no NetSuite login). */
+  externalLink: boolean;
 };

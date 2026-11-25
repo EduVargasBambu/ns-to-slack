@@ -36,6 +36,8 @@ define([], () => {
     ORDER: 'custrecord_gpv_lvl_order',
     APPROVER: 'custrecord_gpv_lvl_approver',
     SUBSTITUTE: 'custrecord_gpv_lvl_substitute',
+    /** Checkbox: approvers of this level approve by signed external link (no NetSuite login). */
+    EXTERNAL_LINK: 'custrecord_gpv_lvl_external_link',
     /** Bill checkbox (custbody_gpv_*_approval) that records this level's approval. */
     APPROVAL_FIELD: 'custrecord_gpv_lvl_legacy_field',
   };
