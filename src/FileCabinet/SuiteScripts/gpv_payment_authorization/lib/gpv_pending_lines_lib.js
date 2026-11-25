@@ -269,6 +269,17 @@ define([
     );
 
   /**
+   * A saved search value as people read it. Checkbox columns come back as true/false or 'T'/'F'.
+   * @param {unknown} value
+   * @returns {string}
+   */
+  const cellText = (value) => {
+    if (value === true || value === 'T') return 'Sí';
+    if (value === false || value === 'F') return 'No';
+    return String(value || '');
+  };
+
+  /**
    * Adds the client's saved search columns (the ones the Monday CSV uses) to each line, by bill.
    * Never throws: without the search or on failure the Center just shows no extra details.
    * @param {{ lines: PendingLine[] }[]} groups
@@ -293,7 +304,7 @@ define([
       bills.run().each((result) => {
         byBill.set(
           String(result.id),
-          columns.map((column) => String(result.getText(column) || result.getValue(column) || '')),
+          columns.map((column) => cellText(result.getText(column) || result.getValue(column))),
         );
         return true;
       });

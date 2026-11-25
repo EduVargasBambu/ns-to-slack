@@ -177,6 +177,19 @@ describe('attachDetails', () => {
     expect(search.load).toHaveBeenCalledWith({ id: 'customsearch_x' });
   });
 
+  it('shows checkbox columns as Sí or No', () => {
+    mockSearch([
+      row('7', { Serie: { value: true }, terms: { value: false } }),
+      row('8', { Serie: { value: 'T' }, terms: { value: 'F' } }),
+    ]);
+    const groups = [{ lines: [{ billId: '7' }, { billId: '8' }] }];
+    pending.attachDetails(groups);
+    expect(groups[0].lines.map((l) => l.details)).toEqual([
+      ['Sí', 'No'],
+      ['Sí', 'No'],
+    ]);
+  });
+
   it('replaces the saved search filters with the shown bills', () => {
     const loaded = mockSearch(billRows);
     pending.attachDetails([

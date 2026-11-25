@@ -922,6 +922,11 @@
         let detailColumns = [];
         /** Indexes of detailColumns shown in the full view: not the ones that only repeat vendor or folio. */
         let fullColumns = [];
+        /** The search's amount column (e.g. foreign currency total) repeats the Monto column. */
+        const isAmount = (line, value) =>
+          value !== '' &&
+          Number.isFinite(Number(value)) &&
+          Math.abs(Math.abs(Number(value)) - line.amount) < 0.005;
         const FULL_VIEW_KEY = 'gpv-full-view';
         let fullView = false;
         try {
@@ -1088,10 +1093,13 @@
                 el(
                   'dl',
                   { class: 'details' },
-                  // Vendor, folio and dates already show above; the full view keeps them.
+                  // Vendor, folio, dates and amount already show above; the full view keeps them.
                   detailColumns.flatMap((label, i) =>
                     details[i] &&
-                    [line.vendor, line.billNumber, line.billDate, line.dueDate].includes(details[i])
+                    ([line.vendor, line.billNumber, line.billDate, line.dueDate].includes(
+                      details[i],
+                    ) ||
+                      isAmount(line, details[i]))
                       ? []
                       : [
                           el('div', {}, [
@@ -1310,14 +1318,17 @@
           const lines = data.groups.flatMap((g) => g.lines);
           const overallTotals = sumByCurrency(lines);
           detailColumns = Array.isArray(data.detailColumns) ? data.detailColumns : [];
-          // Vendor and folio stay as fixed columns in the full view; drop search columns that repeat them.
+          // Vendor, folio and amount are fixed columns in the full view; drop search columns that repeat them.
           const withDetails = lines.filter((l) => Array.isArray(l.details));
           fullColumns = detailColumns
             .map((_, i) => i)
             .filter(
               (i) =>
                 !withDetails.length ||
-                !withDetails.every((l) => [l.vendor, l.billNumber].includes(l.details[i])),
+                !withDetails.every(
+                  (l) =>
+                    [l.vendor, l.billNumber].includes(l.details[i]) || isAmount(l, l.details[i]),
+                ),
             );
           $('full-view').hidden = !detailColumns.length;
           applyFullView();
