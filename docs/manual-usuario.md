@@ -13,7 +13,7 @@ Una forma de autorizar el pago de facturas de proveedor sin WhatsApp ni correos.
 | **CXP** | Revisa que las facturas estén listas para pago. Recibe el resumen del concentrado de la semana y los avisos de facturas descartadas. |
 | **Director** | Primer nivel de aprobación. Puede aprobar antes de la junta. Su aprobación se conserva siempre. |
 | **CFO** | Segundo nivel. |
-| **CO-CEO 1 y CO-CEO 2** | Tercer y cuarto nivel. En la factura sus casillas se llaman **CO - CEO - BB** y **CO - CEO - ECOVALLAS**. |
+| **CO-CEO 1 y CO-CEO 2** | Tercer y cuarto nivel. En la factura sus casillas se llaman **CO - CEO - BB** y **CO - CEO - ECOVALLAS**. Pueden aprobar **sin usuario de NetSuite**, con un enlace que reciben en Slack (ver sección 5). |
 | **Tesorería** | Recibe el aviso cuando hay facturas autorizadas y consulta la lista de autorizadas por pagar. |
 | **Administrador de NetSuite** | Mantiene aprobadores, canales y la programación semanal (ver sección 8). |
 
@@ -70,6 +70,20 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
    > 📷 **Captura:** la ventana "Descartar facturas" con el campo de motivo.
 
 6. Si seleccionas muchas facturas, puede que se procesen por partes: el mensaje te dirá cuántas faltan para que des clic otra vez.
+
+### Aprobar con enlace (sin usuario de NetSuite)
+
+Si tu nivel aprueba por enlace (normalmente los CO-CEO), no necesitas usuario de NetSuite:
+
+1. Te llega un mensaje directo en Slack con el botón **Revisar y autorizar**. Llega el lunes y cada vez que el nivel anterior te pasa facturas.
+2. El botón abre el Centro de Autorización en tu navegador, sin pedir usuario ni contraseña. Funciona en el celular.
+3. Se aprueba y se descarta igual que en la sección anterior. En esta vista el número de factura es solo texto (no abre la factura) y no está la lista de autorizadas de Tesorería.
+4. El enlace **sirve 7 días** desde que llega el mensaje. Cada lunes (y con cada aviso nuevo) llega uno nuevo. Si abres uno vencido verás "Este enlace ya caducó o no es válido. El lunes recibirás uno nuevo en Slack."
+5. El enlace es personal: **no lo reenvíes**. Quien lo tenga puede aprobar en tu nombre mientras sea válido.
+
+> 📷 **Captura:** el mensaje directo con el botón "Revisar y autorizar".
+>
+> 📷 **Captura:** el Centro de Autorización abierto por enlace, sin sesión de NetSuite.
 
 ### Aprobar antes de la junta (Director)
 
@@ -162,9 +176,20 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 
 > 📷 **Captura:** la lista de "GPV - Bitácora de autorización".
 
+### Aprobadores por enlace (CEOs)
+
+- **Activar:** en **GPV - Nivel de aprobación**, marca **Aprueba por enlace externo** en los niveles de CO-CEO 1 y CO-CEO 2. Ese nivel (aprobador y suplente) recibirá el enlace por Slack.
+- **Alta de la persona:** registro de empleado activo, sin acceso a NetSuite, con su **Usuario de Slack** capturado.
+- **Cortar el acceso a una persona:** desactiva su empleado o cámbialo en el nivel; el enlace deja de funcionar al instante.
+- **Cortar todos los enlaces de un nivel:** desmarca la casilla del nivel. Surte efecto de inmediato, también en enlaces ya mandados.
+- **Cortar todos los enlaces de la app:** pide a TI cambiar la clave de enlaces (ver documentación técnica, 5.4). Todos los enlaces mandados dejan de servir y el siguiente aviso trae uno nuevo.
+- Las aprobaciones por enlace quedan en la bitácora con canal **Enlace externo**.
+
+> 📷 **Captura:** el nivel de aprobación con la casilla "Aprueba por enlace externo".
+
 ### Accesos
 
-- Los aprobadores y Tesorería necesitan **usuario de NetSuite**: el Centro de Autorización se abre con su sesión.
+- Los aprobadores (salvo los que aprueban por enlace) y Tesorería necesitan **usuario de NetSuite**: el Centro de Autorización se abre con su sesión.
 - Su rol debe poder ver y editar las facturas de proveedor y los registros GPV. El detalle de permisos está en la documentación técnica (sección 5.7).
 - Opcional: agrega el Centro de Autorización como acceso directo para quien quiera entrar sin el mensaje de Slack (la URL está en la implementación **GPV - Centro de Autorización**).
 
@@ -172,6 +197,9 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 
 **¿Puedo aprobar desde Slack, sin abrir NetSuite?**
 Por ahora no. Slack te avisa y te lleva al Centro de Autorización; ahí apruebas. Aprobar con botones dentro de Slack está planeado para una siguiente etapa.
+
+**Me llegó un enlace y ya caducó, ¿qué hago?**
+Espera el mensaje del siguiente lunes: trae un enlace nuevo. Si es urgente, pide al administrador que genere el concentrado a mano para que se manden los avisos otra vez.
 
 **¿Puedo aprobar una factura que todavía no le toca a mi nivel?**
 No. La app solo te muestra las facturas que esperan tu aprobación.

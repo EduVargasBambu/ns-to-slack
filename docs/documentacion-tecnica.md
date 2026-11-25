@@ -11,7 +11,8 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - **Tipo de proyecto:** SDF Account Customization (un solo cliente), SuiteScript 2.1 con JSDoc.
 - **Una sola lógica de negocio** en `lib/`. Slack y NetSuite solo traducen entradas hacia ella.
 - **El nivel y el aprobador nunca salen de parámetros:** se derivan del estado de la línea y del empleado autenticado (sesión de NS o usuario de Slack mapeado).
-- **Secretos** (bot token, Signing Secret) en API Secrets, nunca en el código.
+- **Secretos** (bot token, Signing Secret, clave de enlaces) en API Secrets, nunca en el código.
+- **Dos vías de acceso al Centro:** sesión de NetSuite (Director, CFO, Tesorería) y **enlace externo firmado** para los niveles marcados con "Aprueba por enlace externo" (CEOs sin usuario de NetSuite). Ver 4.7.
 
 ## 3. Flujo
 
@@ -34,7 +35,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | Registro | Para qué |
 |---|---|
 | `customrecord_gpv_config` | Configuración única: búsqueda de pendientes, canales de Tesorería y CXP, motivo obligatorio al descartar |
-| `customrecord_gpv_approval_level` | Un registro por nivel: orden, aprobador, suplente, campo de aprobación, SLA |
+| `customrecord_gpv_approval_level` | Un registro por nivel: orden, aprobador, suplente, campo de aprobación, SLA y casilla "Aprueba por enlace externo" (`custrecord_gpv_lvl_external_link`) |
 | `customrecord_gpv_payment_proposal` | Concentrado (una junta) |
 | `customrecord_gpv_proposal_line` | Línea del concentrado (una factura), con su estado y nivel |
 | `customrecord_gpv_audit_log` | Bitácora de cada acción |
@@ -53,7 +54,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 - `custentity_gpv_slack_user`: ID de Slack del empleado (liga empleado NS ↔ usuario Slack).
 - `custentity_gpv_vendor_priority` ("Prioridad de Proveedor", en el proveedor): lista `customlist_gpv_vendor_priority` con Alto, Medio y Bajo (`val_gpv_high/medium/low`). Opcional; ordena las facturas en el Centro (decidido 24 nov).
-- Listas: estado de línea, estado de concentrado, acción de bitácora, canal, prioridad de proveedor.
+- Listas: estado de línea, estado de concentrado, acción de bitácora, canal (incluye "Enlace externo"), prioridad de proveedor.
 
 ### Scripts
 
@@ -63,7 +64,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 | `customscript_gpv_weekly_proposal_ss` | Scheduled | Concentrado semanal (lunes). Probado en el sandbox (23 nov) |
 | `customscript_gpv_weekly_expiry_ss` | Scheduled | Vencimiento semanal (sábado). Probado en el sandbox (23 nov) |
 | `customscript_gpv_slack_gateway_sl` | Suitelet externo | Verifica la firma de Slack. Slack no puede llegar directo (ver 4.3); queda para usarse detrás del Worker |
-| `customscript_gpv_approval_center_sl` | Suitelet interno | Centro de Autorización (v1). Probado en el sandbox (23 nov) |
+| `customscript_gpv_approval_center_sl` | Suitelet | Centro de Autorización (v1). Dos deployments: interno (probado en el sandbox, 23 nov) y externo `customdeploy_gpv_approval_center_ext` (25 nov, por probar; ver 4.7) |
 
 ### 4.1 Concentrado semanal
 
@@ -99,7 +100,7 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 
 ### 4.5 Centro de Autorización
 
-- Suitelet **interno** (sesión de NS). `GET` sirve `ui/gpv_approval_center.html`; la página llama a `GET ?action=pending` y a `POST ?action=approve|discard`.
+- Suitelet con sesión de NS (el deployment externo se describe en 4.7). `GET` sirve `ui/gpv_approval_center.html`; la página llama a `GET ?action=pending` y a `POST ?action=approve|discard`.
 - Cada aprobador ve solo las líneas Pendientes en los niveles donde es aprobador o suplente (`gpv_pending_lines_lib`), agrupadas por concentrado y nivel, con totales por moneda y enlace a la factura.
 - **Orden dentro de cada grupo** (`sortLines`, decidido 24 nov): prioridad del proveedor (Alto → Medio → Bajo → sin prioridad), luego USD antes que MXN (otras monedas al final), luego monto de mayor a menor; los empates conservan el vencimiento. La prioridad se lee del proveedor al momento, así que cambiarla reordena sin tocar el concentrado. Aplica a la vista de aprobadores y a la de Tesorería; el CSV del lunes sigue el orden de la búsqueda guardada.
 - **Presentación** (24 nov): la página parte cada grupo en una tabla por moneda (USD, MXN y luego otras), con subtotal y "seleccionar todas" por tabla; en el celular el "seleccionar todas" es del grupo. La prioridad (`priority`, texto de la lista) se muestra como etiqueta junto al proveedor.
@@ -120,7 +121,21 @@ Que los directivos autoricen el pago de facturas de proveedor (CXP aceptadas) de
 - Requisitos: el **Usuario de Slack** (`custentity_gpv_slack_user`) capturado en el empleado; si falta, se registra en el log y no se le avisa. La app de Slack necesita `chat:write`.
 - Un aviso que falla se registra en el log y **nunca** deshace ni bloquea la aprobación. Los textos de NetSuite se escapan para que no generen menciones ni enlaces en Slack.
 - El botón es solo un enlace, pero si la app de Slack tiene **Interactivity** encendida, Slack manda el clic a la Request URL; NetSuite la rechaza (405) y Slack muestra un ⚠️ junto al botón. Mantener Interactivity apagada hasta que exista el Cloudflare Worker.
-- Pendiente: avisar también al suplente; actualizar el DM anterior (`chat.update`) en lugar de mandar uno nuevo.
+- **Aprobadores por enlace externo** (25 nov): si el nivel tiene la casilla "Aprueba por enlace externo", el aprobador **y el suplente** reciben el DM con el botón "Revisar y autorizar", que apunta a la URL externa con `&t=<token>` (el lunes y tras cada avance). Los suplentes de niveles internos siguen sin DM.
+- Pendiente: avisar al suplente de niveles internos; actualizar el DM anterior (`chat.update`) en lugar de mandar uno nuevo.
+
+### 4.7 Aprobación por enlace externo (CEOs)
+
+Para los niveles cuyo aprobador no tiene usuario de NetSuite (decidido 24 nov, construido 25 nov). Se activa con la casilla `custrecord_gpv_lvl_external_link` del nivel (niveles 3 y 4).
+
+- **Token** (`gpv_link_token_lib`): `{employeeId}.{exp}.{hmac}`, HMAC-SHA256 con el API Secret `custsecret_gpv_link_key`. Vale 7 días desde que se manda el DM. Se verifica la firma en tiempo constante **antes** de revisar la caducidad y solo se acepta la forma canónica. **No se guarda en ningún lado** (sin estado). Cambiar el secreto invalida todos los enlaces.
+- **Deployment externo** `customdeploy_gpv_approval_center_ext`: mismo script que el interno, "Disponible sin inicio de sesión", ejecuta como Administrador. Audiencia: todos los roles y **Subsidiarias vacías** (mismo hallazgo que el gateway, ver 4.3).
+- **Identidad:** en el deployment externo el empleado sale **solo** del encabezado `X-GPV-Token`, nunca de la petición ni de la sesión. En cada petición se revisa: token válido y vigente, empleado activo y que sea aprobador o suplente de un nivel con la casilla marcada. Cualquier falla devuelve el mismo mensaje: "Este enlace ya caducó o no es válido. El lunes recibirás uno nuevo en Slack."
+- **Cortar acceso:** desmarcar la casilla del nivel corta de inmediato los enlaces ya mandados; cambiar la clave los corta todos.
+- **Modo externo de la página:** el token viaja solo en el encabezado, el folio de la factura es texto (sin enlace a la factura) y no hay vista de Tesorería (`?view=authorized` solo funciona con sesión).
+- **Bitácora:** las acciones salen con canal "Enlace externo".
+- Una sesión que no es un empleado real (p. ej. el usuario anónimo del deployment externo) se rechaza siempre en el deployment interno.
+- **Alcance por empleado** (nota de revisión): quien es externo en algún nivel ve y puede actuar en **todas** sus líneas pendientes por esa vía, también las de niveles sin la casilla (p. ej. alguien que es CEO 1 y también aprobador del CFO). Es aceptable porque la persona sigue siendo aprobador de esos niveles; si no se quiere, no mezclar niveles.
 
 ## 5. Puesta en marcha (sandbox o PROD)
 
@@ -164,6 +179,12 @@ En **Configuración > Empresa > API Secrets**, crear:
 
 Permitir su uso a los scripts de la app (o a todos los scripts). Los avisos de Slack salen tanto de los scripts programados como del Centro de Autorización.
 
+**Clave de enlaces externos** (solo si algún nivel aprueba por enlace):
+
+1. Generarla con `openssl rand -hex 32`. Una **distinta por cuenta** (sandbox y PROD).
+2. Crear el API Secret `custsecret_gpv_link_key` con ese valor. Scripts permitidos: **Centro de Autorización** (los dos deployments son el mismo script) y **Concentrado semanal** (el lunes firma los enlaces).
+3. Para **invalidar todos los enlaces**: cambiar la clave.
+
 ### 5.5 Búsqueda de pendientes
 
 La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
@@ -188,7 +209,8 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 | CEO 1 | 3 | `custbody_gpv_ceo1_approval` | CO-CEO 1 (casilla "CO - CEO - BB") |
 | CEO 2 | 4 | `custbody_gpv_ceo2_approval` | CO-CEO 2 (casilla "CO - CEO - ECOVALLAS") |
 
-   - El **Suplente** es opcional; puede aprobar en lugar del aprobador (aún no recibe DMs).
+   - El **Suplente** es opcional; puede aprobar en lugar del aprobador (recibe DM solo si el nivel aprueba por enlace externo).
+   - **Aprueba por enlace externo:** marcarla en los niveles 3 y 4 (CEOs sin usuario de NetSuite). Ver 4.7.
    - El nivel con **Orden 1** conserva su aprobación siempre (ver 3, Reglas).
 
 ### 5.7 Empleados, proveedores y permisos
@@ -201,6 +223,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
    - Registros personalizados: Concentrado, Nivel de aprobación y Configuración GPV **Ver**; Línea de concentrado **Editar**; Bitácora **Crear**.
    - Alternativa si no se quiere tocar los roles: que el deployment del Centro ejecute con un rol dedicado.
 4. El deployment del Centro está publicado para todos los roles y empleados; Tesorería entra a su vista con el botón del aviso (`?view=authorized`).
+5. **CEOs por enlace externo:** darlos de alta como empleados **sin acceso** a NetSuite, con su Usuario de Slack. El empleado debe estar activo.
 
 ### 5.8 Pruebas de humo
 
@@ -210,6 +233,13 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
    - Resumen en el canal de CXP y CSV en `SuiteScripts/gpv_payment_authorization/proposals/`.
    - DM a cada aprobador con pendientes; en el log, `DMs a aprobadores: N`.
 4. Con el usuario de cada aprobador: abrir el Centro desde el DM, aprobar una factura y confirmar el DM de confirmación, el DM al siguiente nivel y, al final, el aviso a Tesorería. Descartar una y confirmar el aviso a CXP.
+5. **Enlace externo** (la hace el usuario en el sandbox):
+   1. Desplegar el proyecto y crear el secreto `custsecret_gpv_link_key` (5.4).
+   2. Marcar la casilla en el nivel 3 y poner como aprobador a un empleado de prueba sin acceso a NetSuite, con su Usuario de Slack.
+   3. Correr el script del lunes y verificar que llega el DM con "Revisar y autorizar".
+   4. Abrir el enlace en un navegador **sin sesión de NetSuite**; aprobar una factura y revisar que la bitácora la registre con canal "Enlace externo".
+   5. Desmarcar la casilla del nivel y recargar: debe salir el mensaje de enlace caducado.
+   6. Cambiar a mano un dígito de `t=` en la URL: debe salir el mismo mensaje.
 
 ### 5.9 Programar y cerrar
 
@@ -236,6 +266,7 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 | 23 nov 2026 | El Director es el nivel 1, con un aprobador general (no por área) |
 | 23 nov 2026 | Slack no puede llamar directo a NetSuite (405 por User-Agent). Vía principal: DM con enlace al Centro de Autorización interno; botones nativos después, con un Cloudflare Worker |
 | 24 nov 2026 | La aprobación del Director (nivel 1, fijo en código) es permanente: no se limpia al descartar, vencer ni por huecos |
+| 24 nov 2026 | Los CEOs (sin usuario de NetSuite) aprueban por enlace externo firmado (token HMAC de 7 días, sin estado) en un segundo deployment del Centro; se activa con una casilla por nivel. Ver 4.7 |
 | 24 nov 2026 | No se agrega descarga del CSV del concentrado en el Centro ni en Slack: se queda como propuesta para que la operación se haga en NetSuite y no regrese a Excel |
 
 ## 8. Pendientes y riesgos
@@ -246,5 +277,8 @@ La búsqueda **no viaja con SDF**: se crea a mano en cada cuenta (o se importa).
 - La búsqueda de pendientes definitiva aún no existe (la del sandbox es de prueba).
 - El gateway ejecuta como Administrador: crear un rol mínimo antes de PROD, o no desplegarlo hasta tener el Worker (ver 5.3).
 - Permisos mínimos de los roles de aprobadores y Tesorería para el Centro: por confirmar (ver 5.7).
+- **Por verificar en el sandbox (enlace externo):** que el borde de NetSuite deje al navegador mandar el encabezado propio `X-GPV-Token` en el dominio externo (antes rechazó con 405 algunos POST externos; si falla, el token tendría que ir en la URL o el cuerpo); y que `runtime.getCurrentScript().deploymentId` venga con valor en el deployment externo (de eso depende distinguir interno de externo).
+- El deployment externo ejecuta como Administrador: crear un rol mínimo antes de PROD.
+- El prototipo `../../NS to Slack/MR_Notificaciones_Slack_P2P.js` tiene el bot token de Slack escrito en el código: **revocarlo** y rotarlo.
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
 - Propuesta (no aprobada): botón "Descargar CSV" del concentrado en el Centro y en el resumen de CXP, con una ruta `?action=csv&proposal=N` del Suitelet que sirve el archivo ya ligado al concentrado. Se pospuso para no fomentar volver a Excel.
