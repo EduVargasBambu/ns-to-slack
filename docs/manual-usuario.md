@@ -1,4 +1,4 @@
-# Autorización de Pagos desde Slack — Manual de usuario
+# Autorización de Pagos con NetSuite y Slack — Manual de usuario
 
 > Borrador vivo. Donde dice **📷 Captura** va una imagen de pantalla por agregar.
 
@@ -14,6 +14,7 @@ Una forma de autorizar el pago de facturas de proveedor sin WhatsApp ni correos.
 | **Director** | Primer nivel de aprobación. Puede aprobar antes de la junta. Su aprobación se conserva siempre. |
 | **CFO** | Segundo nivel. |
 | **CO-CEO 1 y CO-CEO 2** | Tercer y cuarto nivel. En la factura sus casillas se llaman **CO - CEO - BB** y **CO - CEO - ECOVALLAS**. Pueden aprobar **sin usuario de NetSuite**, con un enlace que reciben en Slack (ver sección 5). |
+| **Suplente** (opcional, uno por nivel) | Puede aprobar o descartar en lugar del aprobador de su nivel. Lo asigna el administrador (ver sección 8). |
 | **Tesorería** | Recibe el aviso cuando hay facturas autorizadas y consulta la lista de autorizadas por pagar. |
 | **Administrador de NetSuite** | Mantiene aprobadores, canales y la programación semanal (ver sección 8). |
 
@@ -38,6 +39,17 @@ Se ve en la factura, en el campo **Estado de autorización de pago**. Cuando Tes
 
 > 📷 **Captura:** una factura de proveedor con el campo "Estado de autorización de pago" y las 4 casillas de aprobación visibles.
 
+### ¿En qué nivel vuelve una factura?
+
+Una factura descartada o vencida regresa a pendientes y puede entrar a un concentrado futuro. Cuando entra, empieza así:
+
+| La factura… | Si el Director ya la había aprobado | Si el Director no la había aprobado |
+|---|---|---|
+| **se descartó** | Empieza en el **CFO** | Empieza en el **Director** |
+| **venció** (sábado) | Empieza en el **CFO** | Empieza en el **Director** |
+
+La aprobación del Director se conserva siempre. Las de CFO, CO-CEO 1 y CO-CEO 2 se pierden y se tienen que volver a dar.
+
 ## 5. Para los aprobadores
 
 ### El aviso en Slack
@@ -46,19 +58,20 @@ Cuando tienes facturas esperando tu aprobación, te llega un mensaje directo de 
 
 Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de empleado en NetSuite (lo hace el administrador).
 
+Si eres **suplente** de un nivel, en el Centro también ves las facturas que esperan a ese nivel y puedes aprobarlas o descartarlas igual que el aprobador. Lo que hagas queda en la bitácora a tu nombre.
+
 > 📷 **Captura:** el mensaje directo "Tienes N facturas por autorizar" en Slack, con el botón "Ver en NetSuite".
 
 ### Aprobar o descartar en el Centro de Autorización
 
 1. Abre el **Centro de Autorización** desde el botón "Ver en NetSuite" del mensaje de Slack (o desde el acceso directo en NetSuite, si el administrador lo configuró). Funciona en el celular.
-2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado. El número de factura abre la factura con sus adjuntos.
-   - **Por moneda:** cada concentrado muestra primero la tabla de **Dólares (USD)** y luego la de **Pesos (MXN)**, cada una con su número de facturas y su total.
-   - **Orden dentro de cada tabla:** primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad; dentro de cada prioridad, de la factura más grande a la más chica. La prioridad aparece como etiqueta junto al nombre del proveedor.
-   - **Por subsidiaria:** dentro de cada concentrado las facturas se agrupan por subsidiaria (en orden alfabético; las que no tienen, al final) y luego por moneda. Toca el nombre de una subsidiaria para plegarla o desplegarla; todas empiezan abiertas. Si pliegas una con facturas marcadas, su encabezado dice cuántas. En el celular, cada subsidiaria tiene su propio "Seleccionar todas".
+2. Verás solo las facturas que esperan **tu** aprobación, agrupadas por concentrado y nivel. El número de factura abre la factura con sus adjuntos.
+   - **Cómo se acomodan:** dentro de cada concentrado, primero por **subsidiaria** (en orden alfabético; las que no tienen, al final). Dentro de cada subsidiaria hay una tabla de **Dólares (USD)** y luego una de **Pesos (MXN)** (otras monedas, al final), cada una con su número de facturas y su total. Dentro de cada tabla salen primero los proveedores con prioridad **Alto**, luego **Medio**, **Bajo** y al final los que no tienen prioridad; y dentro de cada prioridad, de la factura más grande a la más chica. La prioridad aparece como etiqueta junto al nombre del proveedor.
+   - **Plegar una subsidiaria:** toca su nombre para plegarla o desplegarla; todas empiezan abiertas. Si pliegas una con facturas marcadas, su encabezado dice cuántas, y esas facturas sí entran al aprobar o descartar.
    - **Qué ves de cada factura:** proveedor con su prioridad y su descripción (si la tiene), folio, fecha de la factura, vencimiento, nota (memo) y monto. En el celular se muestran como tarjetas.
    - **Ver detalle:** abre más datos de esa factura (los que CXP definió en la búsqueda de pendientes), sin repetir lo que ya ves.
    - **Vista completa** (solo en computadora): muestra todos esos datos como columnas de la tabla, junto al proveedor, el folio y el monto. Se queda recordada en tu navegador.
-   - La casilla del encabezado de cada tabla selecciona todas las de esa moneda. En el celular, "Seleccionar todas" marca las del concentrado completo.
+   - **Seleccionar todas:** en computadora, la casilla del encabezado de cada tabla marca todas las de esa moneda. En el celular, cada subsidiaria tiene su propio "Seleccionar todas".
 
    > 📷 **Captura:** el Centro de Autorización con un concentrado, la tabla de USD y la de MXN, y las etiquetas de prioridad.
    >
@@ -73,7 +86,7 @@ Para recibirlo, tu usuario de Slack debe estar capturado en tu registro de emple
    >
    > 📷 **Captura:** el mensaje de Slack "✅ Aprobaste N facturas".
 
-5. **Descartar…:** escribe el motivo. La factura regresa a pendientes y, si vuelve en otro concentrado, empieza otra vez: desde el CFO si el Director ya la había aprobado, o desde el Director si no.
+5. **Descartar…:** escribe el motivo (puede ser obligatorio, según lo configure el administrador; si lo escribes, CXP lo recibe en su aviso). La factura regresa a pendientes; en qué nivel empieza si vuelve está en la sección 4, "¿En qué nivel vuelve una factura?".
 
    > 📷 **Captura:** la ventana "Descartar facturas" con el campo de motivo.
 
@@ -103,8 +116,8 @@ En la factura, marca la casilla **Aprobación Director TI**. Cuando entre al con
 
   > 📷 **Captura:** el resumen "Concentrado de la junta del …" en el canal de CXP.
 
-- **El archivo del concentrado** (CSV, se abre en Excel) queda adjunto al registro del concentrado en NetSuite, con las mismas columnas de la búsqueda de pendientes. Es una foto del lunes: el avance de las aprobaciones se consulta en NetSuite.
-- **Facturas descartadas:** cuando un directivo descarta facturas, llega un aviso al canal de CXP con quién las descartó, el motivo y la lista de facturas (proveedor, folio y monto). Esas facturas regresan a pendientes y pueden entrar a un concentrado futuro. Si el Director ya las había aprobado, empiezan desde el CFO.
+- **El archivo del concentrado** (CSV, se abre en Excel) queda adjunto al registro del concentrado en NetSuite, con las mismas columnas de la búsqueda de pendientes; las casillas de aprobación aparecen como Sí/No. Es una foto del lunes: el avance de las aprobaciones se consulta en NetSuite.
+- **Facturas descartadas:** cuando un directivo descarta facturas, llega un aviso al canal de CXP con quién las descartó, el motivo y la lista de facturas (proveedor, folio y monto). Esas facturas regresan a pendientes y pueden entrar a un concentrado futuro (en qué nivel empiezan: sección 4).
 
   > 📷 **Captura:** el aviso "🚫 N facturas descartadas por …" en el canal de CXP.
 
@@ -135,7 +148,7 @@ Los registros de la app están en **Personalización > Listas, registros y campo
 1. Abre **GPV - Nivel de aprobación** y edita el nivel (Director, CFO, CO-CEO 1 o CO-CEO 2).
 2. Cambia **Aprobador** o **Suplente** y guarda.
 3. El cambio aplica de inmediato, también para las facturas que ya están esperando en ese nivel: las ve y las aprueba la persona nueva, no la anterior. Le llega el mensaje en Slack en el siguiente aviso (el lunes, o cuando el nivel anterior le pase facturas).
-4. El suplente puede aprobar en lugar del aprobador, pero por ahora no recibe mensajes en Slack.
+4. El suplente puede aprobar en lugar del aprobador. Por ahora solo recibe mensajes en Slack si el nivel aprueba por enlace (CO-CEOs); en los demás niveles tiene que entrar al Centro por su cuenta.
 
 > 📷 **Captura:** un registro de "GPV - Nivel de aprobación" con los campos Orden, Aprobador, Suplente y Campo de aprobación.
 
@@ -199,7 +212,7 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 
 - **Descripción de proveedor:** en el registro del proveedor, llena el campo **Descripción de proveedor** (qué hace o qué suministra). Aparece bajo su nombre en el Centro; si está vacío, no se muestra nada. Llenarlo corresponde al negocio.
 - **Columnas del detalle:** "Ver detalle" y "Vista completa" muestran todas las columnas de la búsqueda de pendientes (la misma del CSV del lunes). Agrega ahí lo que el aprobador necesite para decidir.
-- **Nada sensible en esa búsqueda** (datos bancarios, notas internas, fórmulas con enlaces): la ven todos los aprobadores y también los CEOs por enlace, y quien tenga un enlace válido la ve completa. Evita columnas de resumen (agrupadas o con total): el detalle podría no aparecer.
+- **Nada sensible en esa búsqueda** (datos bancarios, notas internas, fórmulas con enlaces): la ven todos los aprobadores, también los CEOs por enlace. Evita columnas de resumen (agrupadas o con total): el detalle podría no aparecer.
 - **Compártela** (Audiencia de la búsqueda) con los roles que usan el Centro; si un rol no la ve, su Centro funciona pero sin detalle.
 
 > 📷 **Captura:** la búsqueda de pendientes con su audiencia y sus columnas.
@@ -215,7 +228,7 @@ En **GPV - Bitácora de autorización** queda cada acción: concentrado, línea,
 ## 9. Preguntas frecuentes
 
 **¿Puedo aprobar desde Slack, sin abrir NetSuite?**
-Aún no hay botones que aprueben dentro de la propia Slack: Slack te avisa y te lleva al Centro de Autorización; ahí apruebas. Los CO-CEOs, que no tienen usuario de NetSuite, aprueban con el enlace de su mensaje directo. Los botones dentro de Slack están planeados para una siguiente etapa.
+Aún no hay botones que aprueben dentro de Slack: Slack te avisa y te lleva al Centro de Autorización; ahí apruebas. Los CO-CEOs, que no tienen usuario de NetSuite, aprueban con el enlace de su mensaje directo. Los botones dentro de Slack están planeados para una siguiente etapa.
 
 **Me llegó un enlace y ya caducó, ¿qué hago?**
 Espera el mensaje del siguiente lunes: trae un enlace nuevo. Si es urgente, pide al administrador que genere el concentrado a mano para que se manden los avisos otra vez.
@@ -224,7 +237,7 @@ Espera el mensaje del siguiente lunes: trae un enlace nuevo. Si es urgente, pide
 No. La app solo te muestra las facturas que esperan tu aprobación.
 
 **Descarté una factura por error, ¿qué pasa?**
-Regresa a pendientes y entra en un concentrado futuro. Si el Director ya la había aprobado, su aprobación se conserva y empieza desde el CFO; las aprobaciones de CFO, CO-CEO 1 y CO-CEO 2 se tienen que volver a dar.
+Regresa a pendientes y entra en un concentrado futuro. Empieza en el CFO si el Director ya la había aprobado, o en el Director si no; las demás aprobaciones se vuelven a dar (ver sección 4).
 
 **¿Qué pasa si no apruebo a tiempo?**
-El sábado la factura queda Vencida y regresa a pendientes para la semana siguiente. La aprobación del Director se conserva; las de CFO, CO-CEO 1 y CO-CEO 2 se tienen que volver a dar.
+El sábado la factura queda Vencida y regresa a pendientes para la semana siguiente. Vuelve igual que una descartada (ver sección 4).
