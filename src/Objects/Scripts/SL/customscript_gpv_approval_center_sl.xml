@@ -18,9 +18,10 @@
       <title>GPV - Centro de Autorización</title>
     </scriptdeployment>
     <scriptdeployment scriptid="customdeploy_gpv_approval_center_ext">
-      <allemployees>F</allemployees>
+      <allemployees>T</allemployees>
       <allpartners>F</allpartners>
       <allroles>T</allroles>
+      <audslctrole>ONLINE_FORM_USER</audslctrole>
       <isdeployed>T</isdeployed>
       <isonline>T</isonline>
       <loglevel>DEBUG</loglevel>
