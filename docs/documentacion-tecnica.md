@@ -101,7 +101,7 @@ Casillas `custbody_gpv_*_approval` de la factura. La del nivel 1 (Director) es p
 - **La búsqueda del cliente** define qué facturas entran y las columnas del CSV. La app le agrega por código: línea principal, "fuera de un concentrado activo" (estado vacío, Descartada o Vencida) y sus propias columnas (proveedor, `fxamount`, moneda, vencimiento y las casillas). Si alguien cambia las columnas de la búsqueda, la app no se rompe.
 - **Una factura = una línea.** El nivel inicial sale de las casillas (`gpv_legacy_lib`). Si había huecos, se limpian las casillas y se registra "Limpieza de aprobaciones previas" en la bitácora.
 - **Reanudable:** cada factura queda Pendiente en cuanto se crea su línea y sale de la búsqueda. Si se acaban las unidades (se reservan 500 para el cierre), el script se reprograma solo y continúa en el mismo concentrado. Un segundo run el mismo día nunca crea otro concentrado.
-- **Cierre:** totales MXN y USD en el concentrado, CSV en `SuiteScripts/gpv_payment_authorization/proposals/` (`concentrado_AAAA-MM-DD.csv`, UTF-8 con BOM para Excel) ligado al concentrado, y resumen en Slack.
+- **Cierre:** totales MXN y USD en el concentrado, CSV en `SuiteScripts/gpv_payment_authorization/proposals/` (`concentrado_AAAA-MM-DD.csv`, UTF-8 con BOM para Excel, casillas como Sí/No igual que en el Centro) ligado al concentrado, y resumen en Slack.
 - **Sin facturas:** no crea concentrado; publica "No hay facturas pendientes".
 - **Límites conocidos:** si una ejecución reprogramada arranca después de medianoche, abre un concentrado con la fecha nueva. Si el script se cae entre crear la línea y marcar la factura, la factura puede quedar con dos líneas.
 
@@ -394,6 +394,5 @@ En `src/FileCabinet/SuiteScripts/gpv_payment_authorization/`. "Pura" quiere deci
 - Cuenta de Cloudflare de Grupo Vallas para el Worker (botones nativos en Slack).
 - Propuesta (no aprobada): botón "Descargar CSV" del concentrado en el Centro y en el resumen de CXP, con una ruta `?action=csv&proposal=N` del Suitelet que sirve el archivo ya ligado al concentrado. Se pospuso para no fomentar volver a Excel.
 - Safari/iPhone reales aún sin probar para tarjetas y "Ver detalle".
-- El CSV del lunes muestra las casillas de aprobación como `T`/`true`, no como Sí/No.
 - Avisos: DM al suplente de niveles internos; actualizar el DM anterior (`chat.update`) en lugar de mandar uno nuevo (ver 4.6).
 - Centro: vista de seguimiento para CXP y buscador.

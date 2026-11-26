@@ -58,9 +58,14 @@ define(['N/error', './gpv_legacy_lib'], (/** @type {typeof import('N/error')} */
     return Object.fromEntries(Object.entries(cents).map(([code, c]) => [code, c / 100]));
   };
 
-  /** @param {unknown} value */
+  /** @param {unknown} value Checkbox columns come back as true/false or 'T'/'F'. */
   const csvCell = (value) => {
-    const text = value === true ? 'Sí' : value === false ? 'No' : String(value ?? '');
+    const text =
+      value === true || value === 'T'
+        ? 'Sí'
+        : value === false || value === 'F'
+          ? 'No'
+          : String(value ?? '');
     return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
 

@@ -103,4 +103,8 @@ describe('toCsv', () => {
   it('writes checkboxes as Sí/No and empty values as blank', () => {
     expect(toCsv(['A', 'B', 'C', 'D'], [[true, false, null, 0]])).toBe('﻿A,B,C,D\r\nSí,No,,0');
   });
+
+  it('writes checkboxes that the search returns as T/F as Sí/No', () => {
+    expect(toCsv(['A', 'B'], [['T', 'F']])).toBe('﻿A,B\r\nSí,No');
+  });
 });
